@@ -1,0 +1,62 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro'
+import { createSupabaseServerClient } from '../../lib/supabase'
+
+const supabase = createSupabaseServerClient(Astro.cookies)
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) return Astro.redirect('/login')
+
+const { data: prefs } = await supabase
+  .from('user_preferences')
+  .select('selected_topics')
+  .eq('user_id', user.id)
+  .single()
+
+const topics = prefs?.selected_topics ?? []
+---
+
+<AppLayout title="Repasar">
+  <div class="review-select">
+    <h1>Modo de repaso</h1>
+    <p class="subtitle">Temas: {topics.join(', ') || 'Ninguno seleccionado'}</p>
+
+    <div class="modes">
+      <a href="/review/self-assessment" class="mode-card">
+        <span class="mode-icon">🃏</span>
+        <h2>Self-Assessment</h2>
+        <p>Repasa tarjetas y declara si sabías la respuesta.</p>
+        <span class="mode-cta">Empezar →</span>
+      </a>
+
+      <a href="/review/quiz" class="mode-card">
+        <span class="mode-icon">🎯</span>
+        <h2>Quiz</h2>
+        <p>Responde preguntas de opción múltiple.</p>
+        <span class="mode-cta">Empezar →</span>
+      </a>
+    </div>
+  </div>
+</AppLayout>
+
+<style>
+.review-select { max-width: 700px; margin: 0 auto; }
+h1 { margin: 0 0 0.25rem; font-size: 1.25rem; color: var(--color-text-primary); }
+@media (min-width: 768px) { h1 { font-size: 1.5rem; } }
+.subtitle { margin: 0 0 2rem; color: var(--color-text-secondary); font-size: 0.875rem; }
+/* Mobile-first: single column, 2 columns at ≥480px */
+.modes { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 480px) { .modes { grid-template-columns: 1fr 1fr; gap: 1.5rem; } }
+.mode-card {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  padding: 1.5rem; text-decoration: none;
+  background: var(--glass-bg); backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border); border-radius: var(--radius-card);
+  transition: all 0.2s;
+}
+.mode-card:hover { transform: translateY(-3px); box-shadow: var(--glass-shadow); border-color: var(--color-primary); }
+.mode-icon { font-size: 2.5rem; }
+.mode-card h2 { margin: 0; font-size: 1.125rem; color: var(--color-text-primary); }
+.mode-card p { margin: 0; font-size: 0.875rem; color: var(--color-text-secondary); line-height: 1.5; flex: 1; }
+.mode-cta { font-size: 0.875rem; font-weight: 600; color: var(--color-primary); margin-top: 0.5rem; }
+</style>

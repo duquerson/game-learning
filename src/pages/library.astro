@@ -1,0 +1,30 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import CardLibrary from "../components/cards/CardLibrary.vue";
+import { createSupabaseServerClient } from "../lib/supabase";
+
+const supabase = createSupabaseServerClient(Astro.cookies);
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+if (!user) return Astro.redirect("/login");
+
+// Leer todas las tarjetas
+const { data: cards } = await supabase
+  .from("cards")
+  .select("*")
+  .order("topic")
+  .order("difficulty");
+
+// Leer progreso del usuario para marcar tarjetas repasadas
+const { data: progress } = await supabase
+  .from("user_progress")
+  .select("card_id")
+  .eq("user_id", user.id);
+
+const reviewedIds = [...new Set((progress ?? []).map((p) => p.card_id))];
+---
+
+<AppLayout title="Biblioteca">
+  <CardLibrary client:idle cards={cards ?? []} reviewedIds={reviewedIds} />
+</AppLayout>

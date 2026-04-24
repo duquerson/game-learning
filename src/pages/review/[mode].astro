@@ -1,0 +1,58 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro'
+import ReviewCard from '../../components/cards/ReviewCard.vue'
+import { createSupabaseServerClient } from '../../lib/supabase'
+import type { ReviewMode } from '../../types/app'
+
+const { mode } = Astro.params
+
+// Validate mode
+if (mode !== 'self-assessment' && mode !== 'quiz') {
+  return Astro.redirect('/review')
+}
+
+const supabase = createSupabaseServerClient(Astro.cookies)
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) return Astro.redirect('/login')
+
+// Middleware guarantees session exists, but get user_id for queries
+const userId = user.id
+
+// Get user's selected topics
+const { data: prefs } = await supabase
+  .from('user_preferences')
+  .select('selected_topics')
+  .eq('user_id', userId)
+  .single()
+
+const topics: string[] = prefs?.selected_topics ?? []
+
+// Query cards filtered by topics (or all cards if no topics)
+let query = supabase.from('cards').select('*')
+if (topics.length > 0) {
+  query = query.in('topic', topics)
+}
+const { data: rawCards } = await query
+
+// If no cards found, redirect to library
+if (!rawCards || rawCards.length === 0) {
+  return Astro.redirect('/library')
+}
+
+// Map DB rows to Card type
+const cards = rawCards.map((c) => ({
+  id: c.id,
+  title: c.title,
+  content: c.content,
+  topic: c.topic,
+  subtopic: c.subtopic,
+  difficulty: c.difficulty,
+  points: c.points,
+}))
+
+const reviewMode = mode as ReviewMode
+---
+
+<AppLayout title={reviewMode === 'self-assessment' ? 'Self-Assessment' : 'Quiz'}>
+  <ReviewCard client:load cards={cards} mode={reviewMode} />
+</AppLayout>

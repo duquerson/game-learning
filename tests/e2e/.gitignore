@@ -1,0 +1,6 @@
+# Auth session tokens — never commit these
+.auth/
+
+# Test output artifacts
+test-results/
+playwright-report/

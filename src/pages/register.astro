@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import RegisterForm from '../components/auth/RegisterForm.vue'
+---
+
+<BaseLayout title="Registro">
+  <main class="auth-page">
+    <RegisterForm client:load />
+  </main>
+</BaseLayout>
+
+<style>
+  .auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+</style>

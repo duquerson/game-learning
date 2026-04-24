@@ -1,0 +1,118 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { supabase } from '../../lib/supabase'
+import { toast } from 'vue-sonner'
+import { GENERIC_USER_ERROR_MESSAGE } from '../../lib/user-error'
+import GlassCard from '../ui/GlassCard.vue'
+import GlassButton from '../ui/GlassButton.vue'
+import OAuthButtons from './OAuthButtons.vue'
+
+const email = ref('')
+const password = ref('')
+const loading = ref(false)
+
+async function handleLogin() {
+  if (!email.value || !password.value) {
+    toast.error(GENERIC_USER_ERROR_MESSAGE)
+    return
+  }
+
+  loading.value = true
+  try {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.value,
+      password: password.value,
+    })
+    if (error) throw error
+    window.location.href = '/dashboard'
+  } catch {
+    toast.error(GENERIC_USER_ERROR_MESSAGE)
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+
+<template>
+  <GlassCard>
+    <form @submit.prevent="handleLogin" class="auth-form">
+      <h2>Iniciar sesión</h2>
+      <p class="subtitle">Bienvenido de vuelta</p>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" v-model="email" type="email" placeholder="tu@email.com" autocomplete="email" />
+      </div>
+
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <input id="password" v-model="password" type="password" placeholder="Tu contraseña" autocomplete="current-password" />
+      </div>
+
+      <GlassButton type="submit" :disabled="loading">
+        {{ loading ? 'Iniciando...' : 'Iniciar sesión' }}
+      </GlassButton>
+
+      <OAuthButtons />
+
+      <p class="switch">¿No tienes cuenta? <a href="/register">Regístrate</a></p>
+    </form>
+  </GlassCard>
+</template>
+
+<style scoped>
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+input {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-btn);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.switch {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.switch a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+</style>

@@ -1,0 +1,30 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+dist/
+.astro/
+.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+*.lcov
+
+# Build artifacts
+*.tgz
+*.tar.gz
+
+# IDE
+.vscode/settings.json
+.idea/

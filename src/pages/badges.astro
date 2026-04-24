@@ -1,0 +1,40 @@
+---
+import AppLayout from '../layouts/AppLayout.astro'
+import BadgeGrid from '../components/badges/BadgeGrid.vue'
+import { createSupabaseServerClient } from '../lib/supabase'
+import type { Badge, UserBadge } from '../types/app'
+
+const supabase = createSupabaseServerClient(Astro.cookies)
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) return Astro.redirect('/login')
+
+// Leer todas las insignias (R11.1, R11.2)
+const { data: badgesData } = await supabase
+  .from('badges')
+  .select('id, name, description, icon, level, condition')
+  .order('level', { ascending: true })
+
+// Leer insignias desbloqueadas del usuario (R11.3, R11.4)
+const { data: userBadgesData } = await supabase
+  .from('user_badges')
+  .select('badge_id, unlocked_at')
+  .eq('user_id', user.id)
+
+const badges: Badge[] = (badgesData ?? []).map((b: any) => ({
+  id: b.id,
+  name: b.name,
+  description: b.description,
+  icon: b.icon,
+  level: b.level,
+  condition: b.condition,
+}))
+
+const unlockedBadges: UserBadge[] = (userBadgesData ?? []).map((ub: any) => ({
+  badgeId: ub.badge_id,
+  unlockedAt: ub.unlocked_at,
+}))
+---
+
+<AppLayout title="Insignias">
+  <BadgeGrid client:idle badges={badges} unlockedBadges={unlockedBadges} />
+</AppLayout>

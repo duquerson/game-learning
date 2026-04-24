@@ -1,0 +1,96 @@
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "parserOptions": {
+    "parser": "@typescript-eslint/parser",
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "rules": {
+    // Security: Prevent SQL Injection
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "TemplateLiteral[tag.property.name='raw']",
+        "message": "⚠️ SQL Injection Risk: Use parameterized queries instead of raw SQL with template literals"
+      },
+      {
+        "selector": "CallExpression[callee.object.property.name='raw'][arguments.0.type='TemplateLiteral']",
+        "message": "⚠️ SQL Injection Risk: Never use db.raw() with template literals. Use parameterized queries"
+      }
+    ],
+
+    // Security: Prevent unsafe object mutations (prototype pollution)
+    "no-extend-native": "error",
+    "no-prototype-builtins": "warn",
+
+    // Security: Prevent script injection
+    "no-implied-eval": "error",
+    "no-new-func": "error",
+
+    // Type safety
+    "no-implicit-any": "warn",
+    "no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+
+    // Best practices
+    "eqeqeq": ["error", "always"],
+    "curly": ["error", "all"],
+    "no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error", "info"]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "parser": "@typescript-eslint/parser",
+      "extends": [
+        "plugin:@typescript-eslint/recommended"
+      ],
+      "rules": {
+        "@typescript-eslint/explicit-function-return-types": [
+          "warn",
+          {
+            "allowExpressions": true
+          }
+        ],
+        "@typescript-eslint/strict-boolean-expressions": "warn",
+        "@typescript-eslint/no-explicit-any": "error",
+        "@typescript-eslint/no-floating-promises": "error"
+      }
+    },
+    {
+      "files": ["src/actions/**/*.ts"],
+      "rules": {
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "TemplateLiteral",
+            "message": "⚠️ CRITICAL: Server actions must use parameterized queries. Never use template literals with user input"
+          }
+        ]
+      }
+    },
+    {
+      "files": ["tests/security/**/*.ts"],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
+}

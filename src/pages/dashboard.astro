@@ -1,0 +1,78 @@
+---
+import AppLayout from '../layouts/AppLayout.astro'
+import DashboardView from '../components/layout/Dashboard.vue'
+import { createSupabaseServerClient } from '../lib/supabase'
+import { createAppError, logServerError } from '../lib/errors'
+
+const supabase = createSupabaseServerClient(Astro.cookies)
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) return Astro.redirect('/login')
+
+// Leer user_stats (total_points, current_streak)
+// Usar maybeSingle() para manejar el caso de usuario nuevo sin fila en user_stats (R3.1, R3.2)
+const { data: statsData, error: statsError } = await supabase
+  .from('user_stats')
+  .select('total_points, current_streak')
+  .eq('user_id', user.id)
+  .maybeSingle()
+
+if (statsError) {
+  const appErr = createAppError('INTERNAL_ERROR', statsError.message, '/dashboard')
+  logServerError(appErr)
+}
+
+// Calcular tarjetas repasadas hoy (R3.3)
+// Filtrar por reviewed_at del día actual usando rango UTC completo
+const today = new Date().toISOString().split('T')[0]
+const tomorrow = new Date(Date.now() + 86_400_000).toISOString().split('T')[0]
+
+const { data: todayProgress, error: progressError } = await supabase
+  .from('user_progress')
+  .select('id')
+  .eq('user_id', user.id)
+  .gte('reviewed_at', `${today}T00:00:00.000Z`)
+  .lt('reviewed_at', `${tomorrow}T00:00:00.000Z`)
+
+if (progressError) {
+  const appErr = createAppError('INTERNAL_ERROR', progressError.message, '/dashboard')
+  logServerError(appErr)
+}
+
+// Últimas 3 insignias desbloqueadas (R3.5)
+const { data: recentBadgesData, error: badgesError } = await supabase
+  .from('user_badges')
+  .select('unlocked_at, badges(id, name, description, icon, level, condition)')
+  .eq('user_id', user.id)
+  .order('unlocked_at', { ascending: false })
+  .limit(3)
+
+if (badgesError) {
+  const appErr = createAppError('INTERNAL_ERROR', badgesError.message, '/dashboard')
+  logServerError(appErr)
+}
+
+// Defaults seguros para usuario nuevo sin user_stats (R3.1, R3.2)
+const totalPoints = statsData?.total_points ?? 0
+const currentStreak = statsData?.current_streak ?? 0
+const cardsToday = todayProgress?.length ?? 0
+
+const recentBadges = (recentBadgesData ?? []).map((ub: any) => ({
+  id: ub.badges?.id ?? crypto.randomUUID(),
+  name: ub.badges?.name ?? '',
+  description: ub.badges?.description ?? '',
+  icon: ub.badges?.icon ?? '',
+  level: ub.badges?.level ?? 'basic',
+  condition: ub.badges?.condition ?? { type: 'first_correct' },
+  unlockedAt: ub.unlocked_at,
+}))
+---
+
+<AppLayout title="Dashboard">
+  <DashboardView
+    client:idle
+    totalPoints={totalPoints}
+    currentStreak={currentStreak}
+    cardsToday={cardsToday}
+    recentBadges={recentBadges}
+  />
+</AppLayout>

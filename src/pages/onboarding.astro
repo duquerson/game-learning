@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import OnboardingForm from '../components/onboarding/OnboardingForm.vue'
+import { createSupabaseServerClient } from '../lib/supabase'
+import ToasterWrapper from '../components/ui/ToasterWrapper.vue'
+
+const supabase = createSupabaseServerClient(Astro.cookies)
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) return Astro.redirect('/login')
+
+// Redirigir al dashboard si el onboarding ya está completado
+const { data: prefs } = await supabase
+  .from('user_preferences')
+  .select('onboarding_completed')
+  .eq('user_id', user.id)
+  .single()
+
+if (prefs?.onboarding_completed) return Astro.redirect('/dashboard')
+
+// Obtener topics disponibles desde la DB
+const { data: topicsData } = await supabase
+  .from('cards')
+  .select('topic')
+
+const topics = [...new Set((topicsData ?? []).map(r => r.topic))].sort()
+---
+
+<BaseLayout title="Bienvenido">
+  <main class="onboarding-page">
+    <OnboardingForm client:idle topics={topics} />
+  </main>
+  <ToasterWrapper client:idle />
+</BaseLayout>
+
+<style>
+.onboarding-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+</style>

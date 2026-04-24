@@ -1,0 +1,42 @@
+---
+import { createSupabaseServerClient } from '../../lib/supabase'
+import { createAppError, logServerError } from '../../lib/errors'
+
+const supabase = createSupabaseServerClient(Astro.cookies)
+const code = Astro.url.searchParams.get('code')
+
+if (code) {
+  try {
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (error) {
+      const appErr = createAppError('INTERNAL_ERROR', error.message, '/auth/callback')
+      logServerError(appErr)
+      return Astro.redirect('/login')
+    }
+  } catch (err) {
+    const appErr = createAppError(
+      'INTERNAL_ERROR',
+      err instanceof Error ? err.message : 'OAuth callback error',
+      '/auth/callback'
+    )
+    logServerError(appErr)
+    return Astro.redirect('/login')
+  }
+}
+
+// Verificar si el usuario quedó autenticado correctamente
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) return Astro.redirect('/login')
+
+const { data: prefs } = await supabase
+  .from('user_preferences')
+  .select('onboarding_completed')
+  .eq('user_id', user.id)
+  .single()
+
+if (!prefs?.onboarding_completed) {
+  return Astro.redirect('/onboarding')
+}
+
+return Astro.redirect('/dashboard')
+---
