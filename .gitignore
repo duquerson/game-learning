@@ -2,9 +2,21 @@ node_modules/
 .env
 .env.local
 .env.*.local
+.env.test
+.doppler.env
 dist/
 .astro/
 .vercel/
+
+# IDE & Editor
+.vscode/
+.idea/
+.windsurf/
+.kilocode/
+.kiro/
+.specify/
+.agents/
+.npmrc
 
 # Logs
 *.log
@@ -25,6 +37,14 @@ coverage/
 *.tgz
 *.tar.gz
 
-# IDE
-.vscode/settings.json
-.idea/
+# Test reports & results
+playwright-report/
+test-results/
+test-results.json
+*.test-results.json
+
+# Package lock files (pnpm is primary)
+package-lock.json
+
+# Skills lock
+skills-lock.json
