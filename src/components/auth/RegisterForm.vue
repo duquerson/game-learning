@@ -134,8 +134,3 @@ input:focus {
   text-decoration: none;
 }
 </style>
-}
-.oauth-btn:hover { background: rgba(255,255,255,0.15); }
-.switch { text-align: center; font-size: 0.875rem; color: var(--color-text-secondary); }
-.switch a { color: var(--color-primary); text-decoration: none; }
-</style>
