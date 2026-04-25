@@ -1,0 +1,152 @@
+/* Component Base Styles - Rainblur Theme */
+/* Provides base styles for all components with variants and states */
+
+/* =========================================
+   BUTTON COMPONENT
+   ========================================= */
+
+/* Button base styles */
+.btn {
+  inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200;
+  focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+/* Primary variant with gradient */
+.btn-primary {
+  bg-gradient-to-r from-blue-600 to-purple-600 text-white;
+  hover:from-blue-500 hover:to-purple-500;
+  focus:ring-blue-500;
+}
+
+/* Secondary variant with subtle gradient */
+.btn-secondary {
+  bg-gradient-to-r from-gray-700 to-gray-800 text-white;
+  hover:from-gray-600 hover:to-gray-700;
+  focus:ring-gray-500;
+}
+
+/* Ghost variant with transparent background */
+.btn-ghost {
+  bg-transparent text-gray-300 hover:text-white;
+  focus:ring-gray-500;
+}
+
+/* Size variants */
+.btn-sm {
+  px-3 py-1.5 text-sm;
+}
+
+.btn-md {
+  px-4 py-2 text-base;
+}
+
+.btn-lg {
+  px-6 py-3 text-lg;
+}
+
+/* Disabled state */
+.btn:disabled {
+  opacity-50 cursor-not-allowed;
+}
+
+/* =========================================
+   INPUT COMPONENT
+   ========================================= */
+
+/* Input base styles */
+.input {
+  w-full rounded-lg border bg-gray-800 text-white;
+  focus:outline-none focus:ring-2 focus:ring-offset-2;
+  transition-all duration-200;
+}
+
+/* Focus state with accent color */
+.input:focus {
+  border-blue-500 focus:ring-blue-500;
+}
+
+/* Error state */
+.input-error {
+  border-red-500 focus:ring-red-500;
+}
+
+/* Disabled state */
+.input:disabled {
+  opacity-50 cursor-not-allowed;
+}
+
+/* Size variants */
+.input-sm {
+  px-3 py-1.5 text-sm;
+}
+
+.input-md {
+  px-4 py-2 text-base;
+}
+
+.input-lg {
+  px-6 py-3 text-lg;
+}
+
+/* =========================================
+   CARD COMPONENT
+   ========================================= */
+
+/* Card base styles */
+.card {
+  rounded-xl border border-gray-700 bg-gray-800/50;
+  shadow-lg shadow-gray-900/50;
+  backdrop-blur-sm;
+}
+
+/* Hover state for interactive cards */
+.card-hoverable:hover {
+  border-gray-600 shadow-xl shadow-gray-900/70;
+  transition-all duration-300;
+}
+
+/* Card content padding */
+.card-content {
+  p-6;
+}
+
+/* Card header */
+.card-header {
+  mb-4 pb-4 border-b border-gray-700;
+}
+
+/* Card footer */
+.card-footer {
+  mt-4 pt-4 border-t border-gray-700;
+}
+
+/* =========================================
+   GRADIENT TEXT COMPONENT
+   ========================================= */
+
+/* Gradient text base */
+.gradient-text {
+  bg-clip-text text-transparent;
+  bg-gradient-to-r;
+}
+
+/* Gradient variants */
+.gradient-green {
+  from-green-400 to-emerald-600;
+}
+
+.gradient-teal {
+  from-teal-400 to-cyan-600;
+}
+
+.gradient-pink {
+  from-pink-400 to-rose-600;
+}
+
+.gradient-purple {
+  from-purple-400 to-indigo-600;
+}
+
+.gradient-blue {
+  from-blue-400 to-cyan-600;
+}

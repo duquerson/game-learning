@@ -1,0 +1,266 @@
+/* Design Tokens - Rainblur Theme */
+/* Organized by category: colors, typography, spacing, shadows, animations */
+
+/* =========================================
+   COLORS
+   ========================================= */
+
+/* Background Colors */
+:root {
+  --color-background-primary: oklch(13% 0.02 270);
+  --color-background-secondary: oklch(16% 0.02 270);
+  --color-background-surface: oklch(18% 0.02 270);
+}
+
+/* Text Colors */
+:root {
+  --color-text-primary: oklch(100% 0 0);
+  --color-text-secondary: oklch(75% 0 0);
+  --color-text-muted: oklch(60% 0 0);
+}
+
+/* Accent Colors - Green */
+:root {
+  --color-accent-green: oklch(72% 0.19 155);
+  --color-accent-green-light: oklch(80% 0.18 155);
+  --color-accent-green-dark: oklch(65% 0.20 155);
+}
+
+/* Accent Colors - Teal */
+:root {
+  --color-accent-teal: oklch(70% 0.15 180);
+  --color-accent-teal-light: oklch(78% 0.14 180);
+  --color-accent-teal-dark: oklch(62% 0.16 180);
+}
+
+/* Accent Colors - Pink */
+:root {
+  --color-accent-pink: oklch(65% 0.25 350);
+  --color-accent-pink-light: oklch(75% 0.24 350);
+  --color-accent-pink-dark: oklch(55% 0.26 350);
+}
+
+/* Accent Colors - Purple */
+:root {
+  --color-accent-purple: oklch(60% 0.25 300);
+  --color-accent-purple-light: oklch(70% 0.24 300);
+  --color-accent-purple-dark: oklch(50% 0.26 300);
+}
+
+/* =========================================
+   TYPOGRAPHY
+   ========================================= */
+
+/* Font Families */
+:root {
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --font-family-mono: 'Inter', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+/* Font Sizes */
+:root {
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  --font-size-6xl: 3.75rem;
+  --font-size-7xl: 4.5rem;
+  --font-size-8xl: 6rem;
+  --font-size-9xl: 8rem;
+}
+
+/* Font Weights */
+:root {
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+}
+
+/* Line Heights */
+:root {
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+}
+
+/* Letter Spacings */
+:root {
+  --letter-spacing-tighter: -0.05em;
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0em;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-widest: 0.1em;
+}
+
+/* =========================================
+   SPACING
+   ========================================= */
+
+/* Spacing Scale (0-16, plus 10, 12) */
+:root {
+  --spacing-0: 0rem;
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+}
+
+/* =========================================
+   SHADOWS
+   ========================================= */
+
+/* Shadow Tokens */
+:root {
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-default: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
+
+/* Animation Durations */
+:root {
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+}
+
+/* Easing Curves */
+:root {
+  --easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-smooth: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Animation Utility Classes */
+.animate-fade-in {
+  animation: fadeIn var(--duration-normal) var(--easing-default);
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp var(--duration-normal) var(--easing-default);
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown var(--duration-normal) var(--easing-default);
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft var(--duration-normal) var(--easing-default);
+}
+
+.animate-slide-in-right {
+  animation: slideInRight var(--duration-normal) var(--easing-default);
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--duration-normal) var(--easing-default);
+}
+
+.animate-pulse {
+  animation: pulse var(--duration-slow) var(--easing-default) infinite;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

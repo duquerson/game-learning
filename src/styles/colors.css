@@ -1,0 +1,37 @@
+/* Premium Dark Theme Background */
+:root {
+  --color-background-primary: oklch(13% 0.02 270);
+  --color-foreground-text: oklch(100% 0 0);
+}
+
+/* Accent Colors */
+:root {
+  /* Green */
+  --color-accent-green: oklch(72% 0.19 155);
+  --color-accent-green-light: oklch(80% 0.18 155);
+  --color-accent-green-dark: oklch(65% 0.20 155);
+
+  /* Teal */
+  --color-accent-teal: oklch(70% 0.15 180);
+  --color-accent-teal-light: oklch(78% 0.14 180);
+  --color-accent-teal-dark: oklch(62% 0.16 180);
+
+  /* Pink */
+  --color-accent-pink: oklch(65% 0.25 350);
+  --color-accent-pink-light: oklch(75% 0.24 350);
+  --color-accent-pink-dark: oklch(55% 0.26 350);
+
+  /* Purple */
+  --color-accent-purple: oklch(60% 0.25 300);
+  --color-accent-purple-light: oklch(70% 0.24 300);
+  --color-accent-purple-dark: oklch(50% 0.26 300);
+}
+
+/* Gradient Definitions */
+:root {
+  --gradient-green: linear-gradient(to right, oklch(72% 0.19 155), oklch(65% 0.20 155));
+  --gradient-teal: linear-gradient(to right, oklch(70% 0.15 180), oklch(62% 0.16 180));
+  --gradient-pink: linear-gradient(to right, oklch(65% 0.25 350), oklch(55% 0.26 350));
+  --gradient-purple: linear-gradient(to right, oklch(60% 0.25 300), oklch(50% 0.26 300));
+  --gradient-blue: linear-gradient(to right, oklch(55% 0.20 240), oklch(45% 0.22 240));
+}

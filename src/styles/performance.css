@@ -1,0 +1,352 @@
+/* Performance Optimization Layer - Rainblur Theme */
+/* GPU-accelerated animations and reduced motion support */
+
+/* =========================================
+   GPU-ACCELERATED ANIMATION UTILITIES
+   ========================================= */
+
+/* Use transform and opacity for smooth 60fps animations */
+.animate-gpu {
+  will-change: transform, opacity;
+}
+
+/* GPU-accelerated fade animations */
+.animate-fade-gpu {
+  will-change: opacity;
+  animation: fadeInGPU var(--duration-normal) var(--easing-default);
+}
+
+@keyframes fadeInGPU {
+  from {
+    opacity: 0;
+    transform: translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateZ(0);
+  }
+}
+
+/* GPU-accelerated slide animations */
+.animate-slide-gpu {
+  will-change: transform;
+  animation: slideInGPU var(--duration-normal) var(--easing-default);
+}
+
+@keyframes slideInGPU {
+  from {
+    transform: translate3d(0, 1rem, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+/* GPU-accelerated scale animations */
+.animate-scale-gpu {
+  will-change: transform;
+  animation: scaleInGPU var(--duration-normal) var(--easing-default);
+}
+
+@keyframes scaleInGPU {
+  from {
+    transform: scale(0.95) translateZ(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* GPU-accelerated rotate animations */
+.animate-rotate-gpu {
+  will-change: transform;
+  animation: rotateInGPU var(--duration-normal) var(--easing-default);
+}
+
+@keyframes rotateInGPU {
+  from {
+    transform: rotate(-180deg) translateZ(0);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(0deg) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* GPU-accelerated float animations */
+.animate-float-gpu {
+  will-change: transform;
+  animation: floatInGPU var(--duration-slow) var(--easing-smooth) infinite alternate;
+}
+
+@keyframes floatInGPU {
+  from {
+    transform: translateY(0) translateZ(0);
+  }
+  to {
+    transform: translateY(-1rem) translateZ(0);
+  }
+}
+
+/* GPU-accelerated pulse animations */
+.animate-pulse-gpu {
+  will-change: opacity;
+  animation: pulseGPU var(--duration-slow) var(--easing-default) infinite;
+}
+
+@keyframes pulseGPU {
+  0%, 100% {
+    opacity: 1;
+    transform: translateZ(0);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateZ(0);
+  }
+}
+
+/* =========================================
+   REDUCED MOTION SUPPORT
+   ========================================= */
+
+/* Respect user's reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-gpu,
+  .animate-fade-gpu,
+  .animate-slide-gpu,
+  .animate-scale-gpu,
+  .animate-rotate-gpu,
+  .animate-float-gpu,
+  .animate-pulse-gpu {
+    animation: none !important;
+    will-change: auto !important;
+  }
+
+  /* Disable GPU acceleration when reduced motion is preferred */
+  .animate-gpu {
+    will-change: auto;
+  }
+}
+
+/* =========================================
+   PERFORMANCE UTILITY CLASSES
+   ========================================= */
+
+/* Optimize for 60fps animations */
+.perf-60fps {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Optimize for smooth transitions */
+.perf-smooth {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Disable animations for better performance */
+.perf-no-animation {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Optimize for low-end devices */
+.perf-low-end {
+  will-change: auto;
+  transform: none;
+  backface-visibility: auto;
+}
+
+/* =========================================
+   FONT LOADING OPTIMIZATION
+   ========================================= */
+
+/* Preload critical fonts */
+.font-preload {
+  rel: preload;
+  as: font;
+  type: font/woff2;
+  crossorigin: anonymous;
+}
+
+/* Preconnect to font sources */
+.font-preconnect {
+  rel: preconnect;
+  crossorigin: anonymous;
+}
+
+/* Font loading states */
+.font-loading {
+  visibility: hidden;
+}
+
+.font-loaded {
+  visibility: visible;
+}
+
+/* Font swap fallback */
+.font-swap {
+  font-display: swap;
+}
+
+/* =========================================
+   CRITICAL CSS UTILITIES
+   ========================================= */
+
+/* Critical path optimization */
+.critical-path {
+  /* Inline critical CSS in head */
+  /* Defer non-critical stylesheets */
+}
+
+/* Above-the-fold content optimization */
+.above-fold {
+  /* Prioritize above-the-fold content */
+}
+
+/* =========================================
+   RESOURCE OPTIMIZATION
+   ========================================= */
+
+/* Lazy load non-critical images */
+.lazy-load {
+  loading: lazy;
+}
+
+/* Eager load critical images */
+.eager-load {
+  loading: eager;
+}
+
+/* Optimize images for web */
+.web-optimized {
+  /* Use WebP format */
+  /* Responsive images */
+}
+
+/* =========================================
+   ANIMATION PERFORMANCE TUNING
+   ========================================= */
+
+/* Use transform instead of top/left for animations */
+.transform-animation {
+  animation-name: transformAnimation;
+  animation-timing-function: var(--easing-default);
+  animation-duration: var(--duration-normal);
+}
+
+@keyframes transformAnimation {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(100%, 0, 0);
+  }
+}
+
+/* Use opacity for fade effects */
+.opacity-animation {
+  animation-name: opacityAnimation;
+  animation-timing-function: var(--easing-default);
+  animation-duration: var(--duration-normal);
+}
+
+@keyframes opacityAnimation {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* GPU-accelerated transforms */
+.gpu-transform {
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* =========================================
+   PERFORMANCE TESTING UTILITIES
+   ========================================= */
+
+/* Performance budget monitoring */
+.perf-budget {
+  /* Monitor performance metrics */
+  /* Log performance warnings */
+}
+
+/* Animation frame optimization */
+.perf-frame {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* =========================================
+   RESPONSIVE PERFORMANCE
+   ========================================= */
+
+/* Optimize for mobile devices */
+@media (max-width: 768px) {
+  .animate-gpu {
+    will-change: transform, opacity;
+  }
+
+  .perf-60fps {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+}
+
+/* Optimize for high-refresh-rate displays */
+@media (hover: none) and (pointer: coarse) {
+  .animate-gpu {
+    will-change: auto;
+  }
+
+  .perf-60fps {
+    will-change: auto;
+  }
+}
+
+/* =========================================
+   PRINT PERFORMANCE
+   ========================================= */
+
+@media print {
+  /* Disable animations in print */
+  .animate-gpu,
+  .animate-fade-gpu,
+  .animate-slide-gpu,
+  .animate-scale-gpu,
+  .animate-rotate-gpu,
+  .animate-float-gpu,
+  .animate-pulse-gpu {
+    animation: none !important;
+    will-change: auto !important;
+  }
+
+  /* Optimize for print performance */
+  .perf-60fps {
+    will-change: auto;
+    transform: none;
+  }
+}

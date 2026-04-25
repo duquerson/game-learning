@@ -1,0 +1,92 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    './src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        background: 'oklch(13% 0.02 270)',
+        foreground: 'oklch(100% 0 0)',
+        muted: 'oklch(18% 0.02 270)',
+        'muted-foreground': 'oklch(65% 0.02 250)',
+        primary: 'oklch(72% 0.19 155)',
+        'primary-foreground': 'oklch(100% 0 0)',
+        secondary: 'oklch(18% 0.02 270)',
+        'secondary-foreground': 'oklch(100% 0 0)',
+        card: 'oklch(18% 0.02 270 / 80%)',
+        'card-foreground': 'oklch(100% 0 0)',
+        border: 'oklch(25% 0.02 270)',
+        input: 'oklch(91% 0.01 250)',
+        'input-foreground': 'oklch(20% 0.02 270)',
+        ring: 'oklch(72% 0.19 155)',
+        destructive: 'oklch(60% 0.22 25)',
+        'destructive-foreground': 'oklch(100% 0 0)',
+        success: 'oklch(72% 0.19 155)',
+        warning: 'oklch(75% 0.15 85)',
+        info: 'oklch(65% 0.15 250)',
+        social: 'oklch(70% 0.12 250)',
+        accent: {
+          green: 'oklch(72% 0.19 155)',
+          teal: 'oklch(70% 0.15 180)',
+          pink: 'oklch(65% 0.25 350)',
+          purple: 'oklch(60% 0.25 300)',
+        },
+      },
+      fontFamily: {
+        sans: ['"Inter Variable"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', '"Roboto Mono"', 'monospace'],
+      },
+      fontSize: {
+        hero: ['3rem', { lineHeight: '1.1', fontWeight: '800' }],
+        h1: ['2.25rem', { lineHeight: '1.2', fontWeight: '700' }],
+        h2: ['1.5rem', { lineHeight: '1.3', fontWeight: '600' }],
+        'body-lg': ['1.125rem', { lineHeight: '1.5' }],
+        body: ['1rem', { lineHeight: '1.6' }],
+        sm: ['0.875rem', { lineHeight: '1.4' }],
+        xs: ['0.75rem', { lineHeight: '1.4' }],
+      },
+      spacing: {
+        0: '0rem',
+        1: '0.25rem',
+        2: '0.5rem',
+        3: '0.75rem',
+        4: '1rem',
+        5: '1.25rem',
+        6: '1.5rem',
+        8: '2rem',
+        10: '2.5rem',
+        12: '3rem',
+        16: '4rem',
+      },
+      borderRadius: {
+        sm: '0.25rem',
+        md: '0.5rem',
+        lg: '0.75rem',
+        xl: '1rem',
+        '2xl': '1.5rem',
+        full: '9999px',
+      },
+      boxShadow: {
+        card: '0 4px 6px -1px oklch(0% 0 0 / 30%), 0 2px 4px -2px oklch(0% 0 0 / 20%)',
+        'glow-purple': '0 0 60px oklch(60% 0.25 300 / 30%), 0 0 100px oklch(65% 0.25 350 / 15%)',
+        'glow-green': '0 0 20px oklch(72% 0.19 155 / 40%)',
+      },
+      animation: {
+        'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
+        'fade-in': 'fade-in 0.3s ease-out',
+      },
+      keyframes: {
+        'glow-pulse': {
+          '0%, 100%': { opacity: '0.6' },
+          '50%': { opacity: '1' },
+        },
+        'fade-in': {
+          from: { opacity: '0', transform: 'translateY(10px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+    },
+  },
+  plugins: [],
+}

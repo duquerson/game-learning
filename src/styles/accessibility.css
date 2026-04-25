@@ -1,0 +1,392 @@
+/* Accessibility Layer - Rainblur Theme */
+/* WCAG AA compliant focus indicators and utility classes */
+
+/* =========================================
+   VISIBLE FOCUS INDICATORS
+   ========================================= */
+
+/* Focus indicator using theme accent colors */
+:focus {
+  outline: 2px solid var(--color-accent-blue, #60a5fa);
+  outline-offset: 2px;
+}
+
+/* Focus indicator for high contrast mode */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent-blue, #60a5fa);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+}
+
+/* =========================================
+   SCREEN READER ONLY CONTENT
+   ========================================= */
+
+/* Visually hidden but accessible to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Visually hidden but accessible, with focus support */
+.sr-only-focusable:active,
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* =========================================
+   VISUALLY HIDDEN BUT ACCESSIBLE CONTENT
+   ========================================= */
+
+/* Alternative visually hidden class with different approach */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Visually hidden with focus support */
+.visually-hidden-focusable:active,
+.visually-hidden-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* =========================================
+   ACCESSIBILITY UTILITY CLASSES
+   ========================================= */
+
+/* High contrast focus indicators */
+.focus-visible-ring {
+  outline: 2px solid var(--color-accent-blue, #60a5fa);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Skip link for keyboard navigation */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-background-primary, #1a1a2e);
+  color: var(--color-text-primary, #ffffff);
+  padding: 8px 16px;
+  z-index: 100;
+  transition: top var(--duration-normal) var(--easing-default);
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid var(--color-accent-blue, #60a5fa);
+  outline-offset: 2px;
+}
+
+/* Focus trap container for modals */
+.focus-trap {
+  outline: none;
+}
+
+/* Focus visible utility for custom components */
+.focus-visible {
+  outline: 2px solid var(--color-accent-blue, #60a5fa);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+}
+
+/* Focus ring with offset */
+.focus-ring-offset {
+  outline: 2px solid var(--color-accent-blue, #60a5fa);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 6px rgba(96, 165, 250, 0.25);
+}
+
+/* Focus ring without offset */
+.focus-ring-no-offset {
+  outline: 2px solid var(--color-accent-blue, #60a5fa);
+  outline-offset: 0;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+}
+
+/* High contrast mode support */
+@media (forced-colors: active) {
+  :focus {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+
+  .skip-link:focus {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+}
+
+/* =========================================
+   ACCESSIBILITY STATE INDICATORS
+   ========================================= */
+
+/* Visually hidden error messages */
+.error-message {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Visually hidden success messages */
+.success-message {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Visually hidden loading states */
+.loading-indicator {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* =========================================
+   SCREEN READER TEXT CLASSES
+   ========================================= */
+
+/* Screen reader only text */
+.sr-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Screen reader only text with focus support */
+.sr-text-focusable:active,
+.sr-text-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* =========================================
+   ACCESSIBILITY LANDMARKS
+   ========================================= */
+
+/* Skip to main content link */
+.skip-to-main {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  background: var(--color-background-primary, #1a1a2e);
+  color: var(--color-text-primary, #ffffff);
+  padding: 16px;
+  z-index: 1000;
+  transition: top var(--duration-normal) var(--easing-default);
+  border-radius: 0 0 8px 0;
+}
+
+.skip-to-main:focus {
+  top: 0;
+  outline: 2px solid var(--color-accent-blue, #60a5fa);
+  outline-offset: 2px;
+}
+
+/* Landmark regions */
+main,
+[role="main"],
+[role="main"] > * {
+  outline: none;
+}
+
+/* =========================================
+   ACCESSIBILITY CONTRAST UTILITIES
+   ========================================= */
+
+/* High contrast text */
+.text-high-contrast {
+  color: var(--color-text-primary, #ffffff);
+}
+
+/* High contrast background */
+.bg-high-contrast {
+  background-color: var(--color-background-primary, #1a1a2e);
+}
+
+/* High contrast borders */
+.border-high-contrast {
+  border-color: var(--color-text-primary, #ffffff);
+}
+
+/* =========================================
+   ACCESSIBILITY SPACING UTILITIES
+   ========================================= */
+
+/* Focus indicator spacing */
+.focus-indicator-spacing {
+  padding: 4px;
+}
+
+/* Screen reader spacing */
+.sr-spacing {
+  padding: 0;
+  margin: 0;
+}
+
+/* =========================================
+   ACCESSIBILITY TRANSITION UTILITIES
+   ========================================= */
+
+/* Smooth focus transitions */
+.focus-transition {
+  transition: outline-offset var(--duration-fast) var(--easing-default),
+              box-shadow var(--duration-fast) var(--easing-default);
+}
+
+/* =========================================
+   ACCESSIBILITY UTILITY MIXINS
+   ========================================= */
+
+/* Focus visible utility */
+.focus-visible-utility {
+  outline: 2px solid var(--color-accent-blue, #60a5fa);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+}
+
+/* Screen reader only utility */
+.sr-only-utility {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Visually hidden utility */
+.visually-hidden-utility {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* =========================================
+   ACCESSIBILITY RESPONSIVE UTILITIES
+   ========================================= */
+
+/* Mobile focus indicators */
+@media (max-width: 768px) {
+  :focus-visible {
+    outline: 2px solid var(--color-accent-blue, #60a5fa);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+  }
+
+  .focus-visible-ring {
+    outline: 2px solid var(--color-accent-blue, #60a5fa);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+  }
+}
+
+/* =========================================
+   ACCESSIBILITY PRINT STYLES
+   ========================================= */
+
+@media print {
+  /* Remove focus indicators in print */
+  :focus,
+  :focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* Show visually hidden content in print if needed */
+  .sr-only,
+  .visually-hidden {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+}
