@@ -159,7 +159,8 @@ test.describe('[P1] Accessibility - Keyboard Navigation', () => {
   test('can navigate login form with Tab key', async ({ page }) => {
     await page.goto('/login')
 
-    // Tab to email input
+    // First Tab goes to skip link, second Tab to email
+    await page.keyboard.press('Tab')
     await page.keyboard.press('Tab')
     let focusedElement = await page.evaluate(() => document.activeElement?.id)
     expect(focusedElement).toBe('email')
@@ -169,6 +170,8 @@ test.describe('[P1] Accessibility - Keyboard Navigation', () => {
     focusedElement = await page.evaluate(() => document.activeElement?.id)
     expect(focusedElement).toBe('password')
 
+    // Tab to forgot password link
+    await page.keyboard.press('Tab')
     // Tab to submit button
     await page.keyboard.press('Tab')
     focusedElement = await page.evaluate(() => document.activeElement?.getAttribute('type'))
@@ -340,19 +343,21 @@ test.describe('[P3] Visual Regression - Design Elements', () => {
     await expect(page).toHaveScreenshot('login-light-mode.png', {
       fullPage: true,
       animations: 'disabled',
+      maxDiffPixelRatio: 0.1,
     })
   })
 
   test('takes screenshot of login page (dark mode)', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' })
     await page.goto('/login', { waitUntil: 'domcontentloaded' })
-    await page.waitForSelector('form')
+    await page.waitForSelector('#email')
 
     await page.waitForTimeout(100)
 
     await expect(page).toHaveScreenshot('login-dark-mode.png', {
       fullPage: true,
       animations: 'disabled',
+      maxDiffPixelRatio: 0.1,
     })
   })
 

@@ -79,9 +79,9 @@ async function handleLogin() {
         </div>
 
         <div class="field">
-          <label for="login-email" class="field-label">Email</label>
+          <label for="email" class="field-label">Email</label>
           <input
-            id="login-email"
+            id="email"
             v-model="email"
             type="email"
             placeholder="tu@email.com"
@@ -92,9 +92,9 @@ async function handleLogin() {
         </div>
 
         <div class="field">
-          <label for="login-password" class="field-label">Contraseña</label>
+          <label for="password" class="field-label">Contraseña</label>
           <input
-            id="login-password"
+            id="password"
             v-model="password"
             type="password"
             placeholder="Tu contraseña"
@@ -209,12 +209,13 @@ async function handleLogin() {
   font-size: 0.9375rem;
   font-family: inherit;
   transition: border-color 0.15s ease, background 0.15s ease;
+  min-height: 44px;
 }
-
-.field-input::placeholder {
-  color: var(--color-text-muted);
+@media (prefers-color-scheme: dark) {
+  .field-input {
+    background: rgba(255, 255, 255, 0.08);
+  }
 }
-
 .field-input:focus {
   outline: none;
   border-color: var(--color-primary);

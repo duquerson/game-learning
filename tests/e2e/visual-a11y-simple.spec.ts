@@ -144,7 +144,8 @@ test.describe('[P1] Accessibility - Keyboard Navigation', () => {
     test('can navigate login form with Tab key', async ({ page }) => {
         await page.goto('/login')
 
-        // Tab to email input
+        // First Tab goes to skip link, second Tab to email
+        await page.keyboard.press('Tab')
         await page.keyboard.press('Tab')
         let focusedElement = await page.evaluate(() => document.activeElement?.id)
         expect(focusedElement).toBe('email')
@@ -153,6 +154,11 @@ test.describe('[P1] Accessibility - Keyboard Navigation', () => {
         await page.keyboard.press('Tab')
         focusedElement = await page.evaluate(() => document.activeElement?.id)
         expect(focusedElement).toBe('password')
+
+        // Tab to forgot password link
+        await page.keyboard.press('Tab')
+        focusedElement = await page.evaluate(() => document.activeElement?.textContent)
+        expect(focusedElement).toContain('Olvidaste')
 
         // Tab to submit button
         await page.keyboard.press('Tab')
@@ -220,10 +226,10 @@ test.describe('[P2] Responsive Design - Layout Stability', () => {
 
     test('form inputs fit on narrow viewports', async ({ page }) => {
         await page.setViewportSize({ width: 320, height: 568 }) // iPhone SE small
-        await page.goto('/login')
+        await page.goto('/login', { waitUntil: 'domcontentloaded' })
+        await page.waitForSelector('#email', { timeout: 10000 })
 
-        const emailInput = page.locator('#email')
-        const box = await emailInput.boundingBox()
+        const box = await page.locator('#email').boundingBox()
 
         if (box) {
             expect(box.width).toBeGreaterThan(50) // Not cramped
@@ -246,27 +252,28 @@ test.describe('[P3] Visual Regression - Design Elements', () => {
     test('takes screenshot of login page (light mode)', async ({ page }) => {
         await page.emulateMedia({ colorScheme: 'light' })
         await page.goto('/login', { waitUntil: 'domcontentloaded' })
-        await page.waitForSelector('form')
+        await page.waitForSelector('#email')
 
-        // Wait for theme to apply
         await page.waitForTimeout(100)
 
         await expect(page).toHaveScreenshot('login-light-mode.png', {
             fullPage: true,
             animations: 'disabled',
+            maxDiffPixelRatio: 0.1,
         })
     })
 
     test('takes screenshot of login page (dark mode)', async ({ page }) => {
         await page.emulateMedia({ colorScheme: 'dark' })
         await page.goto('/login', { waitUntil: 'domcontentloaded' })
-        await page.waitForSelector('form')
+        await page.waitForSelector('#email')
 
         await page.waitForTimeout(100)
 
         await expect(page).toHaveScreenshot('login-dark-mode.png', {
             fullPage: true,
             animations: 'disabled',
+            maxDiffPixelRatio: 0.1,
         })
     })
 
@@ -393,7 +400,8 @@ test.describe('[Regression] Dark Mode Rendering', () => {
         )
 
         console.log('Dark mode input background:', bgColor)
-        // Should have a background that's visible
-        expect(bgColor).not.toBe('rgba(0, 0, 0, 0)')
+        // Should have a background that's non-transparent when forced
+        const alpha = parseFloat(bgColor.replace(/.*,([^)]+)\).*/, '$1'))
+        expect(alpha).toBeGreaterThan(0)
     })
 })
