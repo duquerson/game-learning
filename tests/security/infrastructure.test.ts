@@ -17,8 +17,9 @@ describe('✅ Security Testing Infrastructure Validation', () => {
         const sqlInjectionPatterns = [
             /['";\\]|(-{2})|(\*\/)|({|})/,                    // Special chars
             /\bOR\b\s+['"]?\d+['"]?\s*=\s*['"]?\d+/i,         // OR '1'='1
-            /(;|--|\*\*|\/\*|\*\/).*DROP|DELETE/i,            // Destructive
+            /(;|--|\*\*|\/\*|\*\/)?.*\b(DROP|DELETE)\b/i,     // Destructive
             /UNION\s+(ALL\s+)?SELECT/i,                        // UNION-based
+            /\bSELECT\b/i,                                      // Raw SELECT
         ]
 
         const testCases = [
@@ -203,7 +204,7 @@ describe('✅ ESLint Security Rules Concept', () => {
         // In real ESLint: would fail build
         unsafePatterns.forEach(pattern => {
             expect(pattern).toContain('`')
-            expect(pattern).toContain('${}')
+            expect(pattern).toContain('${')
         })
     })
 

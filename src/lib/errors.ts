@@ -8,6 +8,8 @@ export type AppErrorCode =
   | 'NETWORK_ERROR'
   | 'INTERNAL_ERROR'
   | 'SESSION_EXPIRED'
+  | 'RATE_LIMIT'
+  | 'TIMEOUT'
 
 export interface AppError {
   code: AppErrorCode
@@ -18,13 +20,15 @@ export interface AppError {
 }
 
 export const USER_ERROR_MESSAGES: Record<AppErrorCode, string> = {
-  UNAUTHORIZED: GENERIC_USER_ERROR_MESSAGE,
+  UNAUTHORIZED: 'Tu sesión expiró. Inicia sesión de nuevo.',
   FORBIDDEN: GENERIC_USER_ERROR_MESSAGE,
   NOT_FOUND: GENERIC_USER_ERROR_MESSAGE,
   VALIDATION_ERROR: GENERIC_USER_ERROR_MESSAGE,
-  NETWORK_ERROR: GENERIC_USER_ERROR_MESSAGE,
+  NETWORK_ERROR: 'Sin conexión. Verifica tu internet.',
   INTERNAL_ERROR: GENERIC_USER_ERROR_MESSAGE,
-  SESSION_EXPIRED: GENERIC_USER_ERROR_MESSAGE,
+  SESSION_EXPIRED: 'Tu sesión expiró. Inicia sesión de nuevo.',
+  RATE_LIMIT: 'Demasiadas solicitudes. Espera un momento.',
+  TIMEOUT: 'La solicitud tardó demasiado. Intenta de nuevo.',
 }
 
 export function createAppError(code: AppErrorCode, detail?: string, path?: string): AppError {
@@ -45,5 +49,10 @@ export function mapSupabaseError(error: { code?: string; status?: number; messag
   if (error.status === 401 || error.code === 'PGRST301') return 'UNAUTHORIZED'
   if (error.status === 403 || error.code === 'PGRST116') return 'FORBIDDEN'
   if (error.status === 404 || error.code === 'PGRST204') return 'NOT_FOUND'
+  if (error.status === 408) return 'TIMEOUT'
+  if (error.status === 429) return 'RATE_LIMIT'
+  // 400 con mensaje de credenciales inválidas → UNAUTHORIZED (no INTERNAL_ERROR)
+  if (error.status === 400 && error.message?.toLowerCase().includes('invalid login credentials')) return 'UNAUTHORIZED'
+  if (error.status === 400 && error.message?.toLowerCase().includes('email not confirmed')) return 'UNAUTHORIZED'
   return 'INTERNAL_ERROR'
 }

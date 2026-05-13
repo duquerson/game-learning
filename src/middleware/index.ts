@@ -1,5 +1,5 @@
 import { defineMiddleware } from 'astro:middleware'
-import { createSupabaseServerClient } from '../lib/supabase'
+import { createSupabaseClient } from '../lib/supabase'
 import { createAppError, logServerError } from '../lib/errors'
 
 // Rutas que requieren sesión activa (R1.9, R14.2, R18.8)
@@ -17,7 +17,7 @@ const PROTECTED_ROUTES = [
 const AUTH_ROUTES = ['/login', '/register']
 
 // Rutas completamente públicas (sin verificación de sesión)
-const PUBLIC_ROUTES = ['/login', '/register', '/auth/callback']
+const PUBLIC_ROUTES = ['/login', '/register', '/auth/callback', '/reset-password']
 
 function isProtectedRoute(pathname: string): boolean {
   return PROTECTED_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
@@ -32,13 +32,13 @@ function isPublicRoute(pathname: string): boolean {
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const { url, cookies, redirect } = context
+  const { url, cookies, redirect, request } = context
   const pathname = url.pathname
-
+  
   // Rutas de auth (/login, /register): redirigir al dashboard si ya hay sesión
   if (isAuthRoute(pathname)) {
     try {
-      const supabase = createSupabaseServerClient(cookies)
+      const supabase = createSupabaseClient(request, cookies)
       const { data: { user } } = await supabase.auth.getUser()
       if (user) return redirect('/dashboard')
     } catch {
@@ -59,7 +59,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // Rutas protegidas: verificar sesión (R1.9, R14.2, R18.1, R18.8)
   try {
-    const supabase = createSupabaseServerClient(cookies)
+    const supabase = createSupabaseClient(request, cookies)
     const { data: { user }, error } = await supabase.auth.getUser()
 
     if (error) {
@@ -88,7 +88,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
         logServerError(appErr)
       }
 
-      if (prefs && !prefs.onboarding_completed) {
+      // Redirigir a onboarding si: no hay fila de preferencias (usuario nuevo)
+      // o si onboarding_completed es false explícitamente.
+      if (!prefs || !prefs.onboarding_completed) {
         return redirect('/onboarding')
       }
     }
@@ -104,4 +106,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
     logServerError(appErr)
     return redirect('/login')
   }
+})
+
+// Agregar headers de seguridad a la respuesta final
+export const onRequestAfter = defineMiddleware(async (context, next) => {
+  const response = await next()
+  
+  // Agregar headers de seguridad si la respuesta no es un redirect
+  if (response.status !== 302) {
+    response.headers.set('X-Content-Type-Options', 'nosniff')
+    response.headers.set('X-Frame-Options', 'DENY')
+    response.headers.set('X-XSS-Protection', '1; mode=block')
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+    response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  }
+  
+  return response
 })

@@ -4,7 +4,7 @@ import { useReviewStore } from '../../stores/review'
 
 const store = useReviewStore()
 
-// Fallback values from URL params (used when store has no session data)
+// Fallback desde URL params cuando el store se reinicia (ej. refresh de página)
 const urlTotal = ref(0)
 const urlCorrect = ref(0)
 const urlPercentage = ref(0)
@@ -19,40 +19,18 @@ onMounted(async () => {
   urlPercentage.value = Number(params.get('percentage')) || 0
   urlPoints.value = Number(params.get('points')) || 0
 
-  // Trigger confetti celebration when score ≥ 80%
   const score = hasStoreData.value
-    ? (store.sessionResults.length > 0
-        ? Math.round((store.sessionResults.filter(r => r.correct).length / store.sessionResults.length) * 100)
-        : 0)
+    ? total.value > 0 ? Math.round((correct.value / total.value) * 100) : 0
     : urlPercentage.value
 
   if (score >= 80) {
-    // Respect prefers-reduced-motion
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (!prefersReduced) {
       const confetti = (await import('canvas-confetti')).default
-      confetti({
-        particleCount: 120,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#7C3AED', '#EC4899', '#F59E0B', '#10B981', '#06B6D4'],
-      })
-      // Second burst for extra celebration
+      confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } })
       setTimeout(() => {
-        confetti({
-          particleCount: 60,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0, y: 0.65 },
-          colors: ['#7C3AED', '#EC4899', '#F59E0B'],
-        })
-        confetti({
-          particleCount: 60,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1, y: 0.65 },
-          colors: ['#10B981', '#06B6D4', '#C4B5FD'],
-        })
+        confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0, y: 0.65 } })
+        confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1, y: 0.65 } })
       }, 250)
     }
   }
@@ -83,12 +61,6 @@ const performanceMessage = computed(() => {
   return '¡Sigue practicando! 📚'
 })
 
-const scoreRingColor = computed(() => {
-  if (percentage.value >= 80) return 'border-emerald-400'
-  if (percentage.value >= 60) return 'border-amber-400'
-  return 'border-red-400'
-})
-
 function reviewAgain() {
   if (hasStoreData.value && store.deck.length > 0) {
     store.initSession(store.deck, store.mode)
@@ -100,74 +72,292 @@ function reviewAgain() {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center p-4">
-    <div class="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-xl p-6 w-full max-w-md text-center animate-fade-in-up">
-      <h1 class="text-2xl font-bold text-white mb-6">Resultados del repaso</h1>
+  <div class="results-page">
+    <div class="results-card animate-fade-in-up">
 
-      <!-- Score circle -->
+      <h1 class="results-title">Resultados del repaso</h1>
+
+      <!-- Score ring -->
       <div
-        class="w-36 h-36 rounded-full flex items-center justify-center mx-auto mb-4 border-4 bg-white/5 animate-fade-in-up"
-        style="animation-delay: 100ms"
-        :class="scoreRingColor"
+        class="score-ring"
+        :class="{
+          'score-ring--great': percentage >= 80,
+          'score-ring--good': percentage >= 60 && percentage < 80,
+          'score-ring--low': percentage < 60,
+        }"
       >
-        <span class="text-4xl font-bold text-white">{{ percentage }}%</span>
+        <span class="score-value">{{ percentage }}%</span>
       </div>
 
       <!-- Performance message -->
-      <p class="text-xl font-semibold text-white mb-6 animate-fade-in-up" style="animation-delay: 200ms">{{ performanceMessage }}</p>
+      <p class="performance-msg animate-fade-in-up" style="animation-delay: 100ms">
+        {{ performanceMessage }}
+      </p>
 
-      <!-- Stats -->
-      <div class="flex justify-center gap-8 mb-6 animate-fade-in-up" style="animation-delay: 300ms">
-        <div class="flex flex-col items-center">
-          <span class="text-2xl font-bold text-white">{{ total }}</span>
-          <span class="text-xs text-white/60">Total</span>
+      <!-- Stats row -->
+      <div class="stats-row animate-fade-in-up" style="animation-delay: 200ms">
+        <div class="stat-item">
+          <span class="stat-num">{{ total }}</span>
+          <span class="stat-lbl">Total</span>
         </div>
-        <div class="flex flex-col items-center">
-          <span class="text-2xl font-bold text-emerald-400">{{ correct }}</span>
-          <span class="text-xs text-white/60">Correctas</span>
+        <div class="stat-item stat-item--correct">
+          <span class="stat-num">{{ correct }}</span>
+          <span class="stat-lbl">Correctas</span>
         </div>
-        <div class="flex flex-col items-center">
-          <span class="text-2xl font-bold text-red-400">{{ incorrect }}</span>
-          <span class="text-xs text-white/60">Incorrectas</span>
+        <div class="stat-item stat-item--wrong">
+          <span class="stat-num">{{ incorrect }}</span>
+          <span class="stat-lbl">Incorrectas</span>
         </div>
       </div>
 
       <!-- Points earned -->
-      <div class="flex flex-col items-center mb-6 py-3 px-4 rounded-xl bg-amber-400/10 border border-amber-400/20 animate-fade-in-up" style="animation-delay: 400ms">
-        <span class="text-3xl font-bold text-amber-400">+{{ points }}</span>
-        <span class="text-sm text-white/60">puntos ganados</span>
+      <div class="points-box animate-fade-in-up" style="animation-delay: 300ms">
+        <span class="points-value">+{{ points }}</span>
+        <span class="points-lbl">puntos ganados</span>
       </div>
 
       <!-- New badges -->
-      <div v-if="newBadges.length > 0" class="mb-6 animate-fade-in-up" style="animation-delay: 500ms">
-        <h2 class="text-sm font-semibold text-white/70 uppercase tracking-wider mb-3">Nuevas insignias</h2>
-        <div class="flex flex-wrap justify-center gap-3">
+      <div v-if="newBadges.length > 0" class="badges-section animate-fade-in-up" style="animation-delay: 400ms">
+        <h2 class="badges-heading">Nuevas insignias</h2>
+        <div class="badges-list">
           <div
             v-for="badge in newBadges"
             :key="badge.id"
-            class="flex flex-col items-center gap-1 backdrop-blur-sm bg-white/5 border border-white/10 rounded-xl px-4 py-3"
+            class="badge-chip"
           >
-            <span class="text-2xl">{{ badge.icon }}</span>
-            <span class="text-xs font-medium text-white">{{ badge.name }}</span>
+            <span class="badge-icon">{{ badge.icon }}</span>
+            <span class="badge-name">{{ badge.name }}</span>
           </div>
         </div>
       </div>
 
       <!-- Actions -->
-      <div class="flex flex-col gap-3 animate-fade-in-up" style="animation-delay: 500ms">
-        <button
-          class="w-full py-3 px-6 rounded-xl font-semibold text-white bg-violet-600 hover:bg-violet-500 transition-colors"
-          @click="reviewAgain"
-        >
+      <div class="actions animate-fade-in-up" style="animation-delay: 400ms">
+        <button class="btn-primary" @click="reviewAgain">
           Repasar de nuevo
         </button>
-        <button
-          class="w-full py-3 px-6 rounded-xl font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-colors"
-          @click="() => window.location.href = '/dashboard'"
-        >
+        <button class="btn-secondary" @click="() => window.location.href = '/dashboard'">
           Volver al Dashboard
         </button>
       </div>
+
     </div>
   </div>
 </template>
+
+<style scoped>
+/* ── Layout ─────────────────────────────────────────────── */
+.results-page {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+}
+
+.results-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--glass-shadow);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  text-align: center;
+}
+
+@media (min-width: 480px) {
+  .results-card {
+    padding: 2rem;
+  }
+}
+
+/* ── Title ──────────────────────────────────────────────── */
+.results-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+@media (min-width: 480px) {
+  .results-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* ── Score ring ─────────────────────────────────────────── */
+.score-ring {
+  width: 8rem;
+  height: 8rem;
+  border-radius: 50%;
+  border: 4px solid var(--glass-border);
+  background: var(--glass-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-ring--great { border-color: var(--color-success); }
+.score-ring--good  { border-color: var(--color-accent); }
+.score-ring--low   { border-color: var(--color-error); }
+
+.score-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* ── Performance message ────────────────────────────────── */
+.performance-msg {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* ── Stats row ──────────────────────────────────────────── */
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  width: 100%;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stat-num {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.stat-item--correct .stat-num { color: var(--color-success); }
+.stat-item--wrong   .stat-num { color: var(--color-error); }
+
+.stat-lbl {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+/* ── Points box ─────────────────────────────────────────── */
+.points-box {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-btn);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.points-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.points-lbl {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+/* ── Badges ─────────────────────────────────────────────── */
+.badges-section {
+  width: 100%;
+}
+
+.badges-heading {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.badges-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.625rem;
+}
+
+.badge-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.75rem 1rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-btn);
+  min-width: 80px;
+}
+
+.badge-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.badge-name {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+/* ── Actions ────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  width: 100%;
+}
+
+.btn-primary,
+.btn-secondary {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-btn);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--color-text-primary);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+</style>

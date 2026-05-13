@@ -1,10 +1,10 @@
 ---
 import AppLayout from '../layouts/AppLayout.astro'
 import ProfileView from '../components/profile/ProfileView.vue'
-import { createSupabaseServerClient } from '../lib/supabase'
+import { createSupabaseClient } from '../lib/supabase'
 import { createAppError, logServerError } from '../lib/errors'
 
-const supabase = createSupabaseServerClient(Astro.cookies)
+const supabase = createSupabaseClient(Astro.request, Astro.cookies)
 const { data: { user } } = await supabase.auth.getUser()
 if (!user) return Astro.redirect('/login')
 
@@ -57,6 +57,23 @@ const { data: topicsData } = await supabase
   .select('topic')
 
 const availableTopics = [...new Set((topicsData ?? []).map((c: any) => c.topic as string))].sort()
+
+// Obtener insignias del usuario
+const { data: userBadgesData } = await supabase
+  .from('user_badges')
+  .select('unlocked_at, badges(id, name, description, icon, level, condition)')
+  .eq('user_id', user.id)
+  .order('unlocked_at', { ascending: false })
+
+const userBadges = (userBadgesData ?? []).map((ub: any) => ({
+  id: ub.badges?.id ?? '',
+  name: ub.badges?.name ?? '',
+  description: ub.badges?.description ?? '',
+  icon: ub.badges?.icon ?? '',
+  level: ub.badges?.level ?? 'basic',
+  condition: ub.badges?.condition ?? { type: 'first_correct' },
+  unlockedAt: ub.unlocked_at,
+}))
 ---
 
 <AppLayout title="Perfil">
@@ -71,5 +88,6 @@ const availableTopics = [...new Set((topicsData ?? []).map((c: any) => c.topic a
     accuracyPercent={accuracyPercent}
     selectedTopics={prefsData?.selected_topics ?? []}
     availableTopics={availableTopics}
+    badges={userBadges}
   />
 </AppLayout>

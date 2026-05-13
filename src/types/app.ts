@@ -1,6 +1,7 @@
 export type Difficulty = 'easy' | 'medium' | 'hard'
 export type ReviewMode = 'self-assessment' | 'quiz'
 export type BadgeLevel = 'basic' | 'intermediate' | 'advanced'
+export type BadgeCategory = 'achievement' | 'streak' | 'mastery'
 
 export interface Card {
   id: string
@@ -18,6 +19,7 @@ export interface Badge {
   description: string
   icon: string
   level: BadgeLevel
+  category?: BadgeCategory
   condition: import('./database').BadgeConditionJson
 }
 
@@ -66,6 +68,7 @@ export interface SubmitAnswerResult {
   newTotal: number
   streakBonus: number
   correctStreak: number
+  sessionId: string
 }
 
 export interface CompleteSessionResult {

@@ -1,9 +1,9 @@
 ---
 import AppLayout from "../layouts/AppLayout.astro";
 import CardLibrary from "../components/cards/CardLibrary.vue";
-import { createSupabaseServerClient } from "../lib/supabase";
+import { createSupabaseClient } from "../lib/supabase";
 
-const supabase = createSupabaseServerClient(Astro.cookies);
+const supabase = createSupabaseClient(Astro.request, Astro.cookies);
 const {
   data: { user },
 } = await supabase.auth.getUser();

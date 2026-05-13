@@ -24,15 +24,17 @@ export interface FontPreconnectConfig {
  * Should be called during app initialization
  */
 export function addFontPreconnect(config: FontPreconnectConfig): void {
-  const link = document.createElement('link');
-  link.rel = 'preconnect';
-  link.href = config.origin;
-  
-  if (config.crossorigin) {
-    link.crossOrigin = 'anonymous';
+  if (typeof document !== 'undefined') {
+    const link = document.createElement('link');
+    link.rel = 'preconnect';
+    link.href = config.origin;
+    
+    if (config.crossorigin) {
+      link.crossOrigin = 'anonymous';
+    }
+    
+    document.head.appendChild(link);
   }
-  
-  document.head.appendChild(link);
 }
 
 /**
@@ -40,14 +42,16 @@ export function addFontPreconnect(config: FontPreconnectConfig): void {
  * Should be called during app initialization
  */
 export function addFontPreload(config: FontPreloadConfig): void {
-  const link = document.createElement('link');
-  link.rel = 'preload';
-  link.href = config.fontUrl;
-  link.as = 'font';
-  link.type = `font/${config.fontType}`;
-  link.crossOrigin = 'anonymous';
-  
-  document.head.appendChild(link);
+  if (typeof document !== 'undefined') {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.href = config.fontUrl;
+    link.as = 'font';
+    link.type = `font/${config.fontType}`;
+    link.crossOrigin = 'anonymous';
+    
+    document.head.appendChild(link);
+  }
 }
 
 /**
@@ -55,16 +59,18 @@ export function addFontPreload(config: FontPreloadConfig): void {
  * Useful for runtime font loading
  */
 export function addFontFace(fontFamily: string, fontUrl: string, fontWeight: number | string, fontDisplay: 'swap' = 'swap'): void {
-  const style = document.createElement('style');
-  style.textContent = `
-    @font-face {
-      font-family: '${fontFamily}';
-      src: url('${fontUrl}') format('woff2');
-      font-weight: ${fontWeight};
-      font-display: ${fontDisplay};
-    }
-  `;
-  document.head.appendChild(style);
+  if (typeof document !== 'undefined') {
+    const style = document.createElement('style');
+    style.textContent = `
+      @font-face {
+        font-family: '${fontFamily}';
+        src: url('${fontUrl}') format('woff2');
+        font-weight: ${fontWeight};
+        font-display: ${fontDisplay};
+      }
+    `;
+    document.head.appendChild(style);
+  }
 }
 
 /**
@@ -73,6 +79,11 @@ export function addFontFace(fontFamily: string, fontUrl: string, fontWeight: num
  */
 export function waitForFonts(timeout: number = 5000): Promise<void> {
   return new Promise((resolve, reject) => {
+    if (typeof document === 'undefined' || typeof document.fonts === 'undefined') {
+      resolve();
+      return;
+    }
+    
     const fontLoadPromise = document.fonts.ready;
     
     const timeoutId = setTimeout(() => {
@@ -95,6 +106,9 @@ export function waitForFonts(timeout: number = 5000): Promise<void> {
  * Checks if fonts are loaded
  */
 export function areFontsLoaded(): boolean {
+  if (typeof document === 'undefined' || typeof document.fonts === 'undefined') {
+    return false;
+  }
   return document.fonts.check('12px Inter');
 }
 
@@ -285,7 +299,7 @@ export function getAnimationDuration(config: AnimationConfig = defaultAnimationC
   if (config.prefersReducedMotion && prefersReducedMotion()) {
     return 1; // Minimal duration for reduced motion
   }
-  return config.defaultDuration;
+  return config.defaultDuration ?? 300;
 }
 
 /**
@@ -295,13 +309,13 @@ export function getAnimationEasing(config: AnimationConfig = defaultAnimationCon
   if (config.prefersReducedMotion && prefersReducedMotion()) {
     return 'linear';
   }
-  return config.defaultEasing;
+  return config.defaultEasing ?? 'cubic-bezier(0.4, 0, 0.2, 1)';
 }
 
 /**
  * Gets GPU-accelerated transform style
  */
-export function getGPUTransform(properties: string[] = defaultAnimationConfig.gpuProperties): string {
+export function getGPUTransform(properties: string[] = defaultAnimationConfig.gpuProperties ?? []): string {
   if (!defaultAnimationConfig.useGPUAcceleration) {
     return '';
   }
@@ -361,14 +375,18 @@ export class PerformanceMonitor {
    * Starts monitoring font loading
    */
   startFontMonitoring(): void {
-    this.metrics.fontLoadTime = performance.now();
+    if (typeof performance !== 'undefined') {
+      this.metrics.fontLoadTime = performance.now();
+    }
   }
 
   /**
    * Ends font monitoring and records time
    */
   endFontMonitoring(): number {
-    this.metrics.fontLoadTime = performance.now() - this.metrics.fontLoadTime;
+    if (typeof performance !== 'undefined') {
+      this.metrics.fontLoadTime = performance.now() - this.metrics.fontLoadTime;
+    }
     return this.metrics.fontLoadTime;
   }
 
@@ -376,14 +394,18 @@ export class PerformanceMonitor {
    * Starts monitoring CSS loading
    */
   startCSSMonitoring(): void {
-    this.metrics.cssLoadTime = performance.now();
+    if (typeof performance !== 'undefined') {
+      this.metrics.cssLoadTime = performance.now();
+    }
   }
 
   /**
    * Ends CSS monitoring and records time
    */
   endCSSMonitoring(): number {
-    this.metrics.cssLoadTime = performance.now() - this.metrics.cssLoadTime;
+    if (typeof performance !== 'undefined') {
+      this.metrics.cssLoadTime = performance.now() - this.metrics.cssLoadTime;
+    }
     return this.metrics.cssLoadTime;
   }
 

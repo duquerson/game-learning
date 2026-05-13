@@ -8,5 +8,5 @@ onMounted(init)
 </script>
 
 <template>
-  <Toaster position="bottom-right" :theme="theme" rich-colors />
+  <Toaster position="bottom-right" :theme="theme" rich-colors role="status" aria-live="polite" />
 </template>

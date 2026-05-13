@@ -1,0 +1,3 @@
+setup:
+  project: game-test
+  config: dev

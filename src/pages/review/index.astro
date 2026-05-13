@@ -1,8 +1,8 @@
 ---
 import AppLayout from '../../layouts/AppLayout.astro'
-import { createSupabaseServerClient } from '../../lib/supabase'
+import { createSupabaseClient } from '../../lib/supabase'
 
-const supabase = createSupabaseServerClient(Astro.cookies)
+const supabase = createSupabaseClient(Astro.request, Astro.cookies)
 const { data: { user } } = await supabase.auth.getUser()
 if (!user) return Astro.redirect('/login')
 
@@ -23,7 +23,7 @@ const topics = prefs?.selected_topics ?? []
     <div class="modes">
       <a href="/review/self-assessment" class="mode-card">
         <span class="mode-icon">🃏</span>
-        <h2>Self-Assessment</h2>
+        <h2>Autoevaluación</h2>
         <p>Repasa tarjetas y declara si sabías la respuesta.</p>
         <span class="mode-cta">Empezar →</span>
       </a>

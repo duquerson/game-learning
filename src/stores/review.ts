@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { actions } from 'astro:actions'
 import { toast } from 'vue-sonner'
 import { GENERIC_USER_ERROR_MESSAGE } from '../lib/user-error'
+import { BASE_POINTS } from '../lib/points'
 import type { Card, SessionResult, ReviewMode, CompleteSessionResult } from '../types/app'
 import type { Difficulty } from '../types/app'
 
@@ -11,6 +12,7 @@ export const useReviewStore = defineStore('review', () => {
   const currentIndex = ref(0)
   const mode = ref<ReviewMode>('self-assessment')
   const sessionResults = ref<SessionResult[]>([])
+  const sessionId = ref<string | null>(null)
   const correctStreak = ref(0)
   const sessionPoints = ref(0)
   const sessionCompleteResult = ref<CompleteSessionResult | null>(null)
@@ -18,7 +20,8 @@ export const useReviewStore = defineStore('review', () => {
 
   const currentCard = computed(() => deck.value[currentIndex.value] ?? null)
   const progress = computed(() => ({
-    current: currentIndex.value + 1,
+    // Clamp current para que nunca supere total al terminar la sesión
+    current: Math.min(currentIndex.value + 1, deck.value.length),
     total: deck.value.length,
   }))
   const isFinished = computed(() => currentIndex.value >= deck.value.length)
@@ -28,6 +31,7 @@ export const useReviewStore = defineStore('review', () => {
     currentIndex.value = 0
     mode.value = reviewMode
     sessionResults.value = []
+    sessionId.value = crypto.randomUUID()
     correctStreak.value = 0
     sessionPoints.value = 0
     sessionCompleteResult.value = null
@@ -37,10 +41,11 @@ export const useReviewStore = defineStore('review', () => {
     const previousStreak = correctStreak.value
     const previousPoints = sessionPoints.value
 
-    // Optimistic UI updates
+    // Estimación optimista usando BASE_POINTS según dificultad real de la tarjeta
+    const estimatedPoints = correct ? BASE_POINTS[difficulty] : 0
     if (correct) {
       correctStreak.value++
-      sessionPoints.value += 10 // Base points estimate
+      sessionPoints.value += estimatedPoints
     } else {
       correctStreak.value = 0
     }
@@ -49,7 +54,7 @@ export const useReviewStore = defineStore('review', () => {
       cardId,
       correct,
       difficulty,
-      pointsEarned: correct ? 10 : 0,
+      pointsEarned: estimatedPoints,
     })
 
     isLoading.value = true
@@ -57,6 +62,7 @@ export const useReviewStore = defineStore('review', () => {
       const { data, error } = await actions.review.submitAnswer({
         cardId,
         correct,
+        sessionId: sessionId.value ?? crypto.randomUUID(),
       })
 
       if (error || !data || !data.success) {
@@ -65,6 +71,7 @@ export const useReviewStore = defineStore('review', () => {
 
       // Reconcile with server values
       const { pointsEarned, streakBonus, correctStreak: newStreak } = data.data
+      sessionId.value = data.data.sessionId
       correctStreak.value = newStreak
       sessionPoints.value = previousPoints + pointsEarned + streakBonus
       
@@ -91,17 +98,24 @@ export const useReviewStore = defineStore('review', () => {
     }
   }
 
-  async function nextCard() {
+  async function nextCard(): Promise<{ done: boolean; success: boolean }> {
     currentIndex.value++
     if (currentIndex.value >= deck.value.length) {
-      await completeSession()
+      const success = await completeSession()
+      return { done: true, success }
     }
+    return { done: false, success: true }
   }
 
   async function completeSession(): Promise<boolean> {
+    if (!sessionId.value) {
+      toast.error(GENERIC_USER_ERROR_MESSAGE)
+      return false
+    }
     isLoading.value = true
     try {
       const { data, error } = await actions.review.completeSession({
+        sessionId: sessionId.value,
         sessionResults: sessionResults.value,
       })
 
@@ -116,7 +130,7 @@ export const useReviewStore = defineStore('review', () => {
         toast.success(`🏆 ¡Nueva insignia! ${badge.icon} ${badge.name}`)
       }
 
-      window.location.href = '/results'
+      // La navegación a /results es responsabilidad del componente que llama a completeSession.
       return true
     } catch {
       toast.error(GENERIC_USER_ERROR_MESSAGE)
@@ -131,6 +145,7 @@ export const useReviewStore = defineStore('review', () => {
     currentIndex,
     mode,
     sessionResults,
+    sessionId,
     correctStreak,
     sessionPoints,
     sessionCompleteResult,

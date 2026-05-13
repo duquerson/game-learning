@@ -90,7 +90,7 @@ const STORAGE_KEY = 'rainblur-theme-customization';
  * Load user preferences from localStorage
  */
 export function loadPreferences(): UserPreferences | null {
-  if (typeof window === 'undefined') {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
     return null;
   }
 
@@ -110,7 +110,9 @@ export function loadPreferences(): UserPreferences | null {
       saturation: clampSaturation(parsed.saturation),
     };
   } catch (error) {
-    console.error('Failed to load theme preferences:', error);
+    if (typeof console !== 'undefined') {
+      console.error('Failed to load theme preferences:', error);
+    }
     return null;
   }
 }
@@ -119,7 +121,7 @@ export function loadPreferences(): UserPreferences | null {
  * Save user preferences to localStorage
  */
 export function savePreferences(preference: UserPreferences): void {
-  if (typeof window === 'undefined') {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
     return;
   }
 
@@ -134,7 +136,9 @@ export function savePreferences(preference: UserPreferences): void {
     
     localStorage.setItem(STORAGE_KEY, JSON.stringify(validated));
   } catch (error) {
-    console.error('Failed to save theme preferences:', error);
+    if (typeof console !== 'undefined') {
+      console.error('Failed to save theme preferences:', error);
+    }
   }
 }
 
@@ -142,14 +146,16 @@ export function savePreferences(preference: UserPreferences): void {
  * Remove user preferences from localStorage
  */
 export function clearPreferences(): void {
-  if (typeof window === 'undefined') {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
     return;
   }
 
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
-    console.error('Failed to clear theme preferences:', error);
+    if (typeof console !== 'undefined') {
+      console.error('Failed to clear theme preferences:', error);
+    }
   }
 }
 

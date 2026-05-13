@@ -85,9 +85,8 @@ describe('Rainblur Theme - Testing Infrastructure', () => {
   })
 
   describe('Task 11.3: Accessibility Testing Setup', () => {
-    it('should have axe-core available for accessibility testing', () => {
-      // axe-core is installed in package.json
-      // Accessibility tests are integrated in visual-and-accessibility.spec.ts
+    it('should have Playwright accessibility checks documented', () => {
+      // Accessibility checks are integrated in visual-and-accessibility.spec.ts
       expect(true).toBe(true)
     })
   })

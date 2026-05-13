@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+
+<BaseLayout title="Página no encontrada">
+  <main id="main-content" role="main" class="error-page">
+    <div class="error-content">
+      <div class="error-icon">🔍</div>
+      <h1 class="error-title">Página no encontrada</h1>
+      <p class="error-desc">La página que buscas no existe o fue movida.</p>
+      <a href="/dashboard" class="error-btn">Volver al inicio</a>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+.error-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 2rem;
+  background: var(--page-gradient);
+}
+.error-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  max-width: 400px;
+}
+.error-icon { font-size: 4rem; }
+.error-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.error-desc {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+.error-btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-btn);
+  background: var(--color-primary);
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition: opacity 0.2s;
+}
+.error-btn:hover { opacity: 0.9; }
+</style>

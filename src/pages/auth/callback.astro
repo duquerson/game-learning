@@ -1,8 +1,8 @@
 ---
-import { createSupabaseServerClient } from '../../lib/supabase'
+import { createSupabaseClient } from '../../lib/supabase'
 import { createAppError, logServerError } from '../../lib/errors'
 
-const supabase = createSupabaseServerClient(Astro.cookies)
+const supabase = createSupabaseClient(Astro.request, Astro.cookies)
 const code = Astro.url.searchParams.get('code')
 
 if (code) {

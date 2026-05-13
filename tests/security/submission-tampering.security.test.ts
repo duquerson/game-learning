@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createSupabaseServerClient } from '../../src/lib/supabase'
+import { createSupabaseClient } from '../../src/lib/supabase'
 import * as actionsModule from '../../src/actions/index'
 
 /**
@@ -382,11 +382,11 @@ describe('🔒 Security: completeSession - Payload Tampering Prevention', () => 
 
         it('should prevent integer overflow in score calculation', async () => {
             // Create payload with extremely large theoretically valid session
-            const largeSessionResults = Array(Number.MAX_SAFE_INTEGER).fill({
+            const largeSessionResults = Array.from({ length: 10000 }, () => ({
                 cardId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
                 correct: true,
                 difficulty: 'hard' as const,
-            }).slice(0, 10000) // Cap at reasonable size for test
+            }))
 
             const payload = {
                 sessionResults: largeSessionResults,
@@ -402,7 +402,8 @@ describe('🔒 Security: completeSession - Payload Tampering Prevention', () => 
         it('should verify sessionResults hash/signature matches server state', async () => {
             // This assumes server maintains hash of submitted answers
             const payload = {
-                sessionResults: validSessionResults,
+                sessionId: 'b47ac10b-58cc-4372-a567-0e02b2c3d479',
+                sessionResults: validSessionResults.map(({ cardId, correct }) => ({ cardId, correct })),
             }
 
             const result = await actionsModule.server.review.completeSession(payload, mockContext)
@@ -431,7 +432,8 @@ describe('🔒 Security: completeSession - Payload Tampering Prevention', () => 
             }
 
             const payload = {
-                sessionResults: validSessionResults,
+                sessionId: 'b47ac10b-58cc-4372-a567-0e02b2c3d479',
+                sessionResults: validSessionResults.map(({ cardId, correct }) => ({ cardId, correct })),
             }
 
             // Without auth, should fail

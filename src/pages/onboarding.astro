@@ -1,10 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import OnboardingForm from '../components/onboarding/OnboardingForm.vue'
-import { createSupabaseServerClient } from '../lib/supabase'
-import ToasterWrapper from '../components/ui/ToasterWrapper.vue'
+import { createSupabaseClient } from '../lib/supabase'
 
-const supabase = createSupabaseServerClient(Astro.cookies)
+const supabase = createSupabaseClient(Astro.request, Astro.cookies)
 const { data: { user } } = await supabase.auth.getUser()
 if (!user) return Astro.redirect('/login')
 
@@ -26,18 +25,102 @@ const topics = [...new Set((topicsData ?? []).map(r => r.topic))].sort()
 ---
 
 <BaseLayout title="Bienvenido">
-  <main class="onboarding-page">
-    <OnboardingForm client:idle topics={topics} />
-  </main>
-  <ToasterWrapper client:idle />
+  <div class="auth-page">
+
+    <div class="auth-bg" aria-hidden="true">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+
+    <div class="auth-content">
+      <div class="auth-brand">
+        <span class="brand-icon" aria-hidden="true">🧠</span>
+        <span class="brand-name">MicroLearn</span>
+      </div>
+      <div class="auth-form-slot">
+        <OnboardingForm client:idle topics={topics} />
+      </div>
+    </div>
+
+  </div>
 </BaseLayout>
 
 <style>
-.onboarding-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
+  .auth-page {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    overflow: hidden;
+  }
+
+  .auth-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+  }
+
+  .blob-1 {
+    width: 480px;
+    height: 480px;
+    top: -120px;
+    left: -80px;
+    background: var(--color-accent-purple);
+    opacity: 0.25;
+  }
+
+  .blob-2 {
+    width: 380px;
+    height: 380px;
+    bottom: -80px;
+    right: -60px;
+    background: var(--color-accent-green);
+    opacity: 0.18;
+  }
+
+  .auth-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.75rem;
+  }
+
+  .auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .brand-icon {
+    font-size: 1.75rem;
+    line-height: 1;
+  }
+
+  .auth-form-slot {
+    width: 100%;
+    min-height: 300px;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .auth-form-slot > * {
+    width: 100%;
+  }
 </style>

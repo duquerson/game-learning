@@ -49,13 +49,16 @@ CREATE TABLE IF NOT EXISTS user_progress (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id     UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   card_id     UUID NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+  session_id  UUID NOT NULL,
   correct     BOOLEAN NOT NULL,
-  reviewed_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  reviewed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  completed_at TIMESTAMPTZ
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_progress_user_id ON user_progress (user_id);
 CREATE INDEX IF NOT EXISTS idx_user_progress_user_card ON user_progress (user_id, card_id);
 CREATE INDEX IF NOT EXISTS idx_user_progress_reviewed_at ON user_progress (user_id, reviewed_at);
+CREATE INDEX IF NOT EXISTS idx_user_progress_session ON user_progress (user_id, session_id, completed_at);
 
 ALTER TABLE user_progress ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "user_progress_own"

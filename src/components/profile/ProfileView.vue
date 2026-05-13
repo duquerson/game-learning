@@ -1,10 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { actions } from 'astro:actions'
 import { toast } from 'vue-sonner'
 import { GENERIC_USER_ERROR_MESSAGE } from '../../lib/user-error'
+import { getTopicIcon } from '../../utils/topics'
 import GlassCard from '../ui/GlassCard.vue'
 import GlassButton from '../ui/GlassButton.vue'
+import BadgeItem from '../badges/BadgeItem.vue'
+import type { Badge } from '../../types/app'
+
+interface UserBadge extends Badge {
+  unlockedAt: string
+}
 
 const props = defineProps<{
   email: string
@@ -16,7 +23,13 @@ const props = defineProps<{
   accuracyPercent: number
   selectedTopics: string[]
   availableTopics: string[]
+  badges?: UserBadge[]
 }>()
+
+const initial = computed(() => {
+  if (!props.email) return '?'
+  return props.email.charAt(0).toUpperCase()
+})
 
 const selectedTopics = ref<string[]>([...props.selectedTopics])
 const loading = ref(false)
@@ -47,28 +60,25 @@ async function saveTopics() {
     loading.value = false
   }
 }
-
-const topicIcons: Record<string, string> = {
-  JavaScript: '⚡',
-  TypeScript: '🔷',
-}
-
-function getIcon(topic: string) {
-  return topicIcons[topic] ?? '📖'
-}
 </script>
 
 <template>
   <div class="profile-page">
+    <!-- Avatar -->
+    <GlassCard>
+      <div class="avatar-section">
+        <div class="avatar-circle">{{ initial }}</div>
+        <div class="avatar-info">
+          <h2 class="avatar-name">{{ email.split('@')[0] }}</h2>
+          <p class="avatar-email">{{ email }}</p>
+        </div>
+      </div>
+    </GlassCard>
+
     <!-- Stats Section -->
     <GlassCard>
       <div class="stats-section">
         <h2 class="section-title">📊 Mis estadísticas</h2>
-
-        <div class="email-row">
-          <span class="stat-icon">✉️</span>
-          <span class="email-text">{{ email }}</span>
-        </div>
 
         <div class="stats-grid">
           <div class="stat-item">
@@ -114,7 +124,7 @@ function getIcon(topic: string) {
             :class="{ active: selectedTopics.includes(topic) }"
             @click="toggleTopic(topic)"
           >
-            <span class="topic-icon">{{ getIcon(topic) }}</span>
+            <span class="topic-icon">{{ getTopicIcon(topic) }}</span>
             <span class="topic-label">{{ topic }}</span>
             <span v-if="selectedTopics.includes(topic)" class="topic-check">✓</span>
           </button>
@@ -132,6 +142,21 @@ function getIcon(topic: string) {
         </GlassButton>
       </div>
     </GlassCard>
+
+    <!-- Badges Section -->
+    <GlassCard v-if="badges && badges.length > 0">
+      <div class="badges-section">
+        <h2 class="section-title">🏆 Mis insignias</h2>
+        <div class="badges-list">
+          <BadgeItem
+            v-for="badge in badges"
+            :key="badge.id"
+            :badge="badge"
+            :unlocked-at="badge.unlockedAt"
+          />
+        </div>
+      </div>
+    </GlassCard>
   </div>
 </template>
 
@@ -145,8 +170,57 @@ function getIcon(topic: string) {
   padding: 1rem;
 }
 
+/* Avatar */
+.avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.avatar-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.avatar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+.avatar-name {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-transform: capitalize;
+}
+.avatar-email {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+/* Badges section */
+.badges-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.badges-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .stats-section,
-.topics-section {
+.topics-section,
   display: flex;
   flex-direction: column;
   gap: 1.25rem;

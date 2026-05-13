@@ -1,11 +1,13 @@
 ---
 import AppLayout from '../layouts/AppLayout.astro'
 import BadgeGrid from '../components/badges/BadgeGrid.vue'
-import { createSupabaseServerClient } from '../lib/supabase'
+import { createSupabaseClient } from '../lib/supabase'
 import type { Badge, UserBadge } from '../types/app'
 
-const supabase = createSupabaseServerClient(Astro.cookies)
+const supabase = createSupabaseClient(Astro.request, Astro.cookies)
 const { data: { user } } = await supabase.auth.getUser()
+// El middleware garantiza que user existe en rutas protegidas,
+// pero necesitamos el user.id para las queries.
 if (!user) return Astro.redirect('/login')
 
 // Leer todas las insignias (R11.1, R11.2)

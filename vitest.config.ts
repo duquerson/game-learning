@@ -1,6 +1,17 @@
 import { defineConfig } from 'vitest/config'
+import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
+  define: {
+    'import.meta.env.PUBLIC_SUPABASE_URL': JSON.stringify(process.env.PUBLIC_SUPABASE_URL ?? 'http://127.0.0.1:54321'),
+    'import.meta.env.PUBLIC_SUPABASE_ANON_KEY': JSON.stringify(process.env.PUBLIC_SUPABASE_ANON_KEY ?? 'test-local-anon-key'),
+  },
+  resolve: {
+    alias: {
+      'astro:actions': fileURLToPath(new URL('./tests/mocks/astro-actions.ts', import.meta.url)),
+      'astro:schema': fileURLToPath(new URL('./tests/mocks/astro-schema.ts', import.meta.url)),
+    },
+  },
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts', 'tests/**/*.security.test.ts'],

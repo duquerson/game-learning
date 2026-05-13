@@ -1,6 +1,6 @@
 import type { Difficulty } from '../types/app'
 
-export const BASE_POINTS: Record<Difficulty, number> = { easy: 10, medium: 20, hard: 30 }
+export const BASE_POINTS: Record<Difficulty, number> = { easy: 5, medium: 10, hard: 15 }
 
 export function calculatePoints(difficulty: Difficulty, correct: boolean): number {
   if (!correct) return 0

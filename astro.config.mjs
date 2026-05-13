@@ -6,10 +6,21 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   output: 'server',
   security: {
-    csp: true,
+    csp: {
+      algorithm: 'SHA-256',
+      scriptDirective: {
+        hashes: [],
+      },
+      styleDirective: {
+        hashes: [],
+      },
+    },
+  },
+  markdown: {
+    syntaxHighlight: 'prism',
   },
   adapter: vercel(),
-  integrations: [vue()],
+  integrations: [vue({ appEntrypoint: '/src/entrypoint' })],
   vite: {
     plugins: [tailwindcss()],
     cssMinify: true, // Enable CSS minification for production

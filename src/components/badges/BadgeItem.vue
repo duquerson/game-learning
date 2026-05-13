@@ -21,6 +21,12 @@ const levelColors: Record<string, string> = {
   intermediate: 'level-intermediate',
   advanced: 'level-advanced',
 }
+
+const categoryLabels: Record<string, string> = {
+  achievement: 'logro',
+  streak: 'racha',
+  mastery: 'maestría',
+}
 </script>
 
 <template>
@@ -35,6 +41,9 @@ const levelColors: Record<string, string> = {
         <span class="name">{{ badge.name }}</span>
         <span class="level-chip" :class="levelColors[badge.level]">
           {{ levelLabels[badge.level] }}
+        </span>
+        <span v-if="badge.category" class="category-chip">
+          {{ categoryLabels[badge.category] || badge.category }}
         </span>
       </div>
 
@@ -126,6 +135,16 @@ const levelColors: Record<string, string> = {
 .level-basic {
   background: rgba(16, 185, 129, 0.2);
   color: var(--color-success);
+}
+.category-chip {
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(96, 165, 250, 0.15);
+  color: var(--color-accent-blue, #60a5fa);
 }
 
 .level-intermediate {

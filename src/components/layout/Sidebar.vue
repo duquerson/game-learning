@@ -1,9 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import ThemeToggle from '../ui/ThemeToggle.vue'
 import { useAuthStore } from '../../stores/auth'
 
 const auth = useAuthStore()
+const collapsed = ref(false)
+
+onMounted(() => {
+  const saved = localStorage.getItem('sidebar-collapsed')
+  if (saved === 'true') collapsed.value = true
+})
+
+function toggleCollapse() {
+  collapsed.value = !collapsed.value
+  localStorage.setItem('sidebar-collapsed', String(collapsed.value))
+}
+
 const current = computed(() => {
   if (typeof window === 'undefined') return ''
   return window.location.pathname
@@ -19,29 +31,41 @@ const links = [
 </script>
 
 <template>
-  <aside class="sidebar">
+  <aside class="sidebar" :class="{ collapsed }">
     <div class="logo">
       <span class="logo-icon">🧠</span>
-      <span class="logo-text">MicroLearn</span>
+      <span v-if="!collapsed" class="logo-text">MicroLearn</span>
     </div>
 
-    <nav class="nav">
+    <nav class="nav" role="navigation" aria-label="Navegación principal">
       <a
         v-for="link in links"
         :key="link.href"
         :href="link.href"
         class="nav-item"
         :class="{ active: current === link.href }"
+        :aria-label="link.label"
       >
         <span class="icon">{{ link.icon }}</span>
-        <span>{{ link.label }}</span>
+        <span v-if="!collapsed">{{ link.label }}</span>
       </a>
     </nav>
 
     <div class="sidebar-footer">
       <ThemeToggle />
-      <button class="logout-btn" @click="auth.logout()">Cerrar sesión</button>
+      <button class="logout-btn" @click="auth.logout()" aria-label="Cerrar sesión">
+        <span v-if="collapsed">🚪</span>
+        <span v-else>Cerrar sesión</span>
+      </button>
     </div>
+
+    <button
+      class="collapse-btn"
+      @click="toggleCollapse"
+      :aria-label="collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'"
+    >
+      {{ collapsed ? '→' : '←' }}
+    </button>
   </aside>
 </template>
 
@@ -56,6 +80,11 @@ const links = [
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-right: 1px solid var(--glass-border);
+  transition: width 0.3s ease;
+  position: relative;
+}
+.sidebar.collapsed {
+  width: 64px;
 }
 .logo {
   display: flex;
@@ -65,6 +94,7 @@ const links = [
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--color-text-primary);
+  white-space: nowrap;
 }
 .logo-icon { font-size: 1.5rem; }
 .nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
@@ -79,6 +109,7 @@ const links = [
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 .nav-item:hover { background: rgba(255,255,255,0.1); color: var(--color-text-primary); }
 .nav-item.active { background: rgba(124,58,237,0.15); color: var(--color-primary); }
@@ -99,6 +130,28 @@ const links = [
   cursor: pointer;
   font-size: 0.75rem;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 .logout-btn:hover { color: var(--color-error); border-color: var(--color-error); }
+.collapse-btn {
+  position: absolute;
+  bottom: 1rem;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+}
+.collapse-btn:hover {
+  background: var(--color-primary);
+  color: white;
+}
 </style>

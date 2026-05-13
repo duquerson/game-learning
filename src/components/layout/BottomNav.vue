@@ -9,22 +9,24 @@ const current = computed(() => {
 const links = [
   { href: '/dashboard', icon: '🏠', label: 'Inicio' },
   { href: '/library', icon: '📚', label: 'Biblioteca' },
+  { href: '/review', icon: '🔄', label: 'Repasar' },
   { href: '/badges', icon: '🏆', label: 'Insignias' },
   { href: '/profile', icon: '👤', label: 'Perfil' },
 ]
 </script>
 
 <template>
-  <nav class="bottom-nav">
+  <nav class="bottom-nav" role="navigation" aria-label="Navegación móvil">
     <a
       v-for="link in links"
       :key="link.href"
       :href="link.href"
       class="nav-item"
       :class="{ active: current === link.href }"
+      :aria-label="link.label"
     >
       <span class="icon">{{ link.icon }}</span>
-      <span class="label">{{ link.label }}</span>
+      <span v-if="current === link.href" class="label">{{ link.label }}</span>
     </a>
   </nav>
 </template>
@@ -57,4 +59,5 @@ const links = [
 }
 .nav-item.active { color: var(--color-primary); }
 .icon { font-size: 1.25rem; }
+.label { font-size: 0.625rem; font-weight: 600; }
 </style>

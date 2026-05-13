@@ -98,14 +98,142 @@
   }
 }
 
+/* Animaciones adicionales usadas por componentes Vue */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(1rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-1rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-1rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(1rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Clases de utilidad de animación */
+.animate-fade-in {
+  animation: fadeIn 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 200ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 200ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 200ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 200ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.animate-scale-in {
+  animation: scaleIn 200ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Soporte para prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ===== ESTILOS BASE ===== */
+/*
+  El fondo se aplica directamente en html/body con el color oscuro por defecto.
+  Esto evita el flash blanco antes de que el script inline establezca data-theme.
+  El tema claro sobreescribe esto vía [data-theme="light"].
+*/
 html {
-  background-color: var(--color-background);
+  background-color: oklch(13% 0.02 270);
 }
 
 body {
+  background-color: oklch(13% 0.02 270);
   font-family: var(--font-sans);
   color: var(--color-foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+[data-theme="light"] html,
+[data-theme="light"] body,
+html[data-theme="light"],
+body[data-theme="light"] {
+  background-color: oklch(97% 0.005 270);
+}
+
+/* ===== VARIABLES DE TEMA (glass, radios, semánticas) ===== */
+/* Estas variables son usadas por los componentes Vue con CSS scoped.
+   Se definen aquí como fuente única de verdad. */
+:root {
+  /* Glass morphism */
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(12px);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  /* Border radii de componentes */
+  --radius-card: 1rem;
+  --radius-btn: 0.625rem;
+  --radius-full: 9999px;
+
+  /* Colores semánticos (alias de los tokens @theme) */
+  --color-primary: oklch(72% 0.19 155);
+  --color-secondary: oklch(18% 0.02 270);
+  --color-success: oklch(72% 0.19 155);
+  --color-error: oklch(60% 0.22 25);
+  --color-accent: oklch(75% 0.15 85);
+  --color-text-primary: oklch(100% 0 0);
+  --color-text-secondary: oklch(75% 0 0);
+  --color-text-muted: oklch(60% 0 0);
+}
+
+/* Tema claro */
+[data-theme="light"] {
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-blur: blur(12px);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --color-text-primary: oklch(15% 0.02 270);
+  --color-text-secondary: oklch(40% 0.02 270);
+  --color-text-muted: oklch(55% 0.02 270);
+}
+
+/* Tema oscuro (por defecto) */
+[data-theme="dark"] {
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(12px);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --color-text-primary: oklch(100% 0 0);
+  --color-text-secondary: oklch(75% 0 0);
+  --color-text-muted: oklch(60% 0 0);
 }

@@ -1,15 +1,16 @@
 import { defineAction } from 'astro:actions'
 import { z } from 'astro:schema'
-import { createSupabaseServerClient } from '../lib/supabase'
+import { createSupabaseClient } from '../lib/supabase'
 import { calculatePoints, calculateStreakBonus, applyPoints } from '../lib/points'
 import { updateStreak } from '../lib/streak'
 import { evaluateBadgeConditions } from '../lib/badges'
 import { createAppError, logServerError, mapSupabaseError } from '../lib/errors'
 import type { Badge, BadgeConditionContext, SubmitAnswerResult, CompleteSessionResult } from '../types/app'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 // ─── Helper: verificar sesión ────────────────────────────────────────────────
-async function requireUser(context: { cookies: Parameters<typeof createSupabaseServerClient>[0] }) {
-  const supabase = createSupabaseServerClient(context.cookies)
+async function requireUser(context: { request: Request; cookies: Parameters<typeof createSupabaseClient>[1] }) {
+  const supabase = createSupabaseClient(context.request, context.cookies)
   const { data: { user }, error } = await supabase.auth.getUser()
   if (error || !user) return { supabase, userId: null }
   return { supabase, userId: user.id }
@@ -26,6 +27,7 @@ export const server = {
       input: z.object({
         cardId: z.string().uuid(),
         correct: z.boolean(),
+        sessionId: z.string().uuid(),
       }),
       handler: async (input, context): Promise<{ success: true; data: SubmitAnswerResult } | { success: false; error: string; message: string }> => {
         const { supabase, userId } = await requireUser(context)
@@ -72,6 +74,7 @@ export const server = {
           user_id: userId,
           card_id: input.cardId,
           correct: input.correct,
+          session_id: input.sessionId,
         })
         if (progressError) {
           const code = mapSupabaseError(progressError)
@@ -107,7 +110,7 @@ export const server = {
 
         return {
           success: true,
-          data: { pointsEarned, newTotal, streakBonus, correctStreak: newStreak },
+          data: { pointsEarned, newTotal, streakBonus, correctStreak: newStreak, sessionId: input.sessionId },
         }
       },
     }),
@@ -117,10 +120,14 @@ export const server = {
      */
     completeSession: defineAction({
       input: z.object({
+        sessionId: z.string().uuid(),
         sessionResults: z.array(z.object({
           cardId: z.string().uuid(),
           correct: z.boolean(),
-        })).min(1).max(200),
+          // Accept extra fields from client (difficulty, pointsEarned) but don't use them
+          difficulty: z.string().optional(),
+          pointsEarned: z.number().optional(),
+        }).strict()).min(1).max(200),
       }),
       handler: async (input, context): Promise<{ success: true; data: CompleteSessionResult } | { success: false; error: string; message: string }> => {
         const { supabase, userId } = await requireUser(context)
@@ -165,8 +172,10 @@ export const server = {
           .from('user_progress')
           .select('card_id, correct, reviewed_at')
           .eq('user_id', userId)
+          .eq('session_id', input.sessionId)
+          .is('completed_at', null)
           .order('reviewed_at', { ascending: false })
-          .limit(Math.max(200, requestedSessionSize * 3))
+          .limit(200)
         if (recentSessionError) {
           const code = mapSupabaseError(recentSessionError)
           const err = createAppError(code, recentSessionError.message, '/actions/review.completeSession')
@@ -193,6 +202,24 @@ export const server = {
           progressCountByKey.set(key, available - 1)
           validatedSessionTotal++
           if (row.correct) validatedSessionCorrect++
+        }
+        if (validatedSessionTotal !== requestedSessionSize || requestedSessionSize !== (recentSessionProgress?.length ?? 0)) {
+          const err = createAppError('VALIDATION_ERROR', 'Session payload mismatch', '/actions/review.completeSession')
+          logServerError(err)
+          return { success: false, error: err.code, message: err.message }
+        }
+
+        const { error: completionMarkError } = await supabase
+          .from('user_progress')
+          .update({ completed_at: new Date().toISOString() })
+          .eq('user_id', userId)
+          .eq('session_id', input.sessionId)
+          .is('completed_at', null)
+        if (completionMarkError) {
+          const code = mapSupabaseError(completionMarkError)
+          const err = createAppError(code, completionMarkError.message, '/actions/review.completeSession')
+          logServerError(err)
+          return { success: false, error: err.code, message: err.message }
         }
 
         // Construir BadgeConditionContext
@@ -295,6 +322,7 @@ export const server = {
     savePreferences: defineAction({
       input: z.object({
         topics: z.array(z.string().min(1)).min(1),
+        difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
       }),
       handler: async (input, context): Promise<{ success: true } | { success: false; error: string; message: string }> => {
         const { supabase, userId } = await requireUser(context)
@@ -307,6 +335,7 @@ export const server = {
         const { error: prefsError } = await supabase.from('user_preferences').upsert({
           user_id: userId,
           selected_topics: input.topics,
+          difficulty: input.difficulty,
           onboarding_completed: true,
           updated_at: new Date().toISOString(),
         })
@@ -337,7 +366,7 @@ export const server = {
     }),
   },
 
-  profile: {
+profile: {
     /**
      * Actualiza los topics seleccionados del usuario.
      */
@@ -365,6 +394,193 @@ export const server = {
         }
 
         return { success: true }
+      },
+    }),
+  },
+
+  auth: {
+    /**
+     * Inicia sesión con email y contraseña.
+     */
+    login: defineAction({
+      input: z.object({
+        email: z.string().email(),
+        password: z.string().min(1),
+      }),
+      handler: async (input, context): Promise<{ success: true; redirect: string } | { success: false; error: string; message: string }> => {
+        const supabase = createSupabaseClient(context.request, context.cookies)
+
+        const { error } = await supabase.auth.signInWithPassword({
+          email: input.email,
+          password: input.password,
+        })
+
+        if (error) {
+          const code = mapSupabaseError(error)
+          const err = createAppError(code, error.message, '/actions/auth.login')
+          logServerError(err)
+          return { success: false, error: err.code, message: err.message }
+        }
+
+        return { success: true, redirect: '/dashboard' }
+      },
+    }),
+
+    /**
+     * Registra un nuevo usuario.
+     */
+    register: defineAction({
+      input: z.object({
+        email: z.string().email(),
+        password: z.string()
+          .min(8, 'La contraseña debe tener al menos 8 caracteres')
+          .regex(/[A-Z]/, 'La contraseña debe tener al menos una mayúscula')
+          .regex(/[a-z]/, 'La contraseña debe tener al menos una minúscula')
+          .regex(/[0-9]/, 'La contraseña debe tener al menos un número')
+          .regex(/[^A-Za-z0-9]/, 'La contraseña debe tener al menos un carácter especial'),
+      }),
+      handler: async (input, context) => {
+        const supabase = createSupabaseClient(context.request, context.cookies)
+        
+        const { error } = await supabase.auth.signUp({
+          email: input.email,
+          password: input.password,
+        })
+        
+        if (error) {
+          const code = mapSupabaseError(error)
+          const err = createAppError(code, error.message, '/actions/auth.register')
+          logServerError(err)
+          return { success: false, error: err.code, message: err.message, redirect: null }
+        }
+
+        return { success: true, redirect: '/onboarding' }
+      },
+    }),
+
+    /**
+     * Cierra la sesión actual.
+     */
+    logout: defineAction({
+      handler: async (_input, context) => {
+        console.log('[LOGOUT] Context keys:', Object.keys(context))
+        console.log('[LOGOUT] Has request:', !!context.request)
+        console.log('[LOGOUT] Has cookies:', !!context.cookies)
+        
+        try {
+          if (!context.request || !context.cookies) {
+            console.error('[LOGOUT] Contexto incompleto')
+            return { success: true, redirect: '/login' }
+          }
+          
+          const supabase = createSupabaseClient(context.request, context.cookies)
+          
+          const { error } = await supabase.auth.signOut()
+          
+          if (error) {
+            console.error('[LOGOUT] Error de Supabase:', error.message)
+          }
+
+          return { success: true, redirect: '/login' }
+        } catch (err) {
+          console.error('[LOGOUT] Error:', err)
+          return { success: true, redirect: '/login' }
+        }
+      },
+    }),
+
+    /**
+     * Obtiene la sesión actual del usuario.
+     */
+    getSession: defineAction({
+      handler: async (context) => {
+        const supabase = createSupabaseClient(context.request, context.cookies)
+        
+        const { data: { user }, error } = await supabase.auth.getUser()
+        
+        if (error) {
+          const code = mapSupabaseError(error)
+          const err = createAppError(code, error.message, '/actions/auth.getSession')
+          logServerError(err)
+          return { success: false, error: err.code, message: err.message }
+        }
+
+        return { success: true, user: user as SupabaseUser | null }
+      },
+    }),
+
+    /**
+     * Envía email de recuperación de contraseña.
+     */
+    resetPassword: defineAction({
+      input: z.object({
+        email: z.string().email('Ingresa un email válido'),
+      }),
+      handler: async (input, context) => {
+        const supabase = createSupabaseClient(context.request, context.cookies)
+
+        const { error } = await supabase.auth.resetPasswordForEmail(input.email, {
+          redirectTo: `${context.url?.origin ?? ''}/reset-password`,
+        })
+
+        if (error) {
+          const code = mapSupabaseError(error)
+          const err = createAppError(code, error.message, '/actions/auth.resetPassword')
+          logServerError(err)
+          return { success: false, error: err.code, message: err.message }
+        }
+
+        return { success: true }
+      },
+    }),
+
+    /**
+     * Actualiza la contraseña del usuario (usado en recovery flow).
+     */
+    /**
+     * Actualiza la preferencia de tema en la base de datos.
+     */
+    updateTheme: defineAction({
+      input: z.object({
+        theme: z.enum(['light', 'dark']),
+      }),
+      handler: async (input, context) => {
+        const { supabase, userId } = await requireUser(context)
+        if (!userId) {
+          return { success: false }
+        }
+        await supabase.from('user_preferences').upsert({
+          user_id: userId,
+          theme: input.theme,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+        return { success: true }
+      },
+    }),
+
+    updatePassword: defineAction({
+      input: z.object({
+        password: z.string()
+          .min(8, 'La contraseña debe tener al menos 8 caracteres')
+          .regex(/[A-Z]/, 'La contraseña debe tener al menos una mayúscula')
+          .regex(/[a-z]/, 'La contraseña debe tener al menos una minúscula')
+          .regex(/[0-9]/, 'La contraseña debe tener al menos un número'),
+      }),
+      handler: async (input, context) => {
+        const supabase = createSupabaseClient(context.request, context.cookies)
+
+        const { error } = await supabase.auth.updateUser({
+          password: input.password,
+        })
+
+        if (error) {
+          const code = mapSupabaseError(error)
+          const err = createAppError(code, error.message, '/actions/auth.updatePassword')
+          logServerError(err)
+          return { success: false, error: err.code, message: err.message }
+        }
+
+        return { success: true, redirect: '/login' }
       },
     }),
   },

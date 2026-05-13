@@ -23,7 +23,7 @@ export const astroSecurityConfig = {
     // Server-side environment variables
     env: {
         secrets: ['SUPABASE_SERVICE_ROLE_KEY', 'DATABASE_PASSWORD'],
-        public: ['VITE_SUPABASE_URL', 'PUBLIC_API_BASE'],
+        public: ['PUBLIC_SUPABASE_URL', 'PUBLIC_SUPABASE_ANON_KEY'],
     },
 
     // HTTPS only
@@ -38,10 +38,10 @@ export const astroSecurityConfig = {
 export const securityHeaders = {
     'Content-Security-Policy': [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net", // Vue hydration needs inline scripts
+        "script-src 'self' 'sha256-...'", // Astro CSP hashes cover inline hydration scripts
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: https:",
-        "font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com",
+        "font-src 'self'",
         "connect-src 'self' https://*.supabase.co", // Supabase API
         "frame-ancestors 'self'", // Prevent clickjacking
         "base-uri 'self'",
@@ -342,4 +342,3 @@ export const securityDependencies = {
         'jsonwebtoken': '^9.0.0', // JWT validation
     },
 }
-    `

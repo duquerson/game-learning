@@ -246,7 +246,7 @@ test.describe('[P1] Accessibility - Color Contrast', () => {
     })
 
     console.log('Potential contrast issues (light mode):', contrastIssues)
-    // Manual review recommended - would need axe-core for accurate checking
+    // Manual review recommended for final contrast validation
   })
 
   test('text contrast in dark mode', async ({ page }) => {

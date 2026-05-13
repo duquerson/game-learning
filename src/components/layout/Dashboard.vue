@@ -14,28 +14,45 @@ interface RecentBadge extends Badge {
 const props = withDefaults(defineProps<{
   totalPoints?: number
   currentStreak?: number
+  longestStreak?: number
   cardsToday?: number
-  recentBadges?: RecentBadge[]
+  uniqueReviewed?: number
+  totalCards?: number
+  userEmail?: string
+  allBadges?: RecentBadge[]
   loading?: boolean
 }>(), {
   totalPoints: 0,
   currentStreak: 0,
+  longestStreak: 0,
   cardsToday: 0,
-  recentBadges: () => [],
+  uniqueReviewed: 0,
+  totalCards: 0,
+  userEmail: '',
+  allBadges: () => [],
   loading: false,
+})
+
+const userName = computed(() => {
+  if (!props.userEmail) return ''
+  return props.userEmail.split('@')[0].charAt(0).toUpperCase() + props.userEmail.split('@')[0].slice(1)
 })
 
 const greeting = computed(() => {
   const hour = new Date().getHours()
-  if (hour < 12) return 'Buenos días'
-  if (hour < 18) return 'Buenas tardes'
-  return 'Buenas noches'
+  const timeGreeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
+  return props.userEmail ? `${timeGreeting}, ${userName.value} 👋` : `${timeGreeting} 👋`
 })
 
 const streakLabel = computed(() => {
   if (props.currentStreak === 0) return '—'
   if (props.currentStreak === 1) return '1 día'
   return `${props.currentStreak} días`
+})
+
+const progressPercent = computed(() => {
+  if (props.totalCards === 0) return 0
+  return Math.round((props.uniqueReviewed / props.totalCards) * 100)
 })
 
 function navigateTo(path: string) {
@@ -46,10 +63,22 @@ function navigateTo(path: string) {
 <template>
   <div class="dashboard">
     <header class="header">
-      <h1 class="greeting">{{ greeting }} 👋</h1>
+      <h1 class="greeting">{{ greeting }}</h1>
     </header>
 
-    <!-- Motivational empty state (R3.6) -->
+    <!-- Progress bar -->
+    <GlassCard v-if="totalCards > 0" class="progress-card">
+      <div class="progress-header">
+        <span class="progress-label">Progreso general</span>
+        <span class="progress-count">{{ uniqueReviewed }} / {{ totalCards }} tarjetas</span>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" :style="{ width: `${progressPercent}%` }"></div>
+      </div>
+      <span class="progress-pct">{{ progressPercent }}% completado</span>
+    </GlassCard>
+
+    <!-- Motivational empty state -->
     <EmptyState
       v-if="cardsToday === 0 && !loading"
       icon="🌟"
@@ -59,10 +88,10 @@ function navigateTo(path: string) {
       ctaHref="/review"
     />
 
-    <!-- Stats grid (R3.1, R3.2, R3.3) -->
+    <!-- Stats grid -->
     <div class="stats-grid">
       <template v-if="loading">
-        <SkeletonLoader variant="stat" :count="3" />
+        <SkeletonLoader variant="stat" :count="4" />
       </template>
       <template v-else>
         <GlassCard class="stat-card animate-fade-in-up" style="animation-delay: 0ms">
@@ -81,17 +110,25 @@ function navigateTo(path: string) {
           </div>
         </GlassCard>
 
-        <GlassCard class="stat-card stat-card--full animate-fade-in-up" style="animation-delay: 200ms">
+        <GlassCard class="stat-card animate-fade-in-up" style="animation-delay: 150ms">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-info">
+            <span class="stat-value">{{ longestStreak }}</span>
+            <span class="stat-label">Mejor racha</span>
+          </div>
+        </GlassCard>
+
+        <GlassCard class="stat-card animate-fade-in-up" style="animation-delay: 200ms">
           <div class="stat-icon">📖</div>
           <div class="stat-info">
             <span class="stat-value">{{ cardsToday }}</span>
-            <span class="stat-label">Tarjetas repasadas hoy</span>
+            <span class="stat-label">Repasadas hoy</span>
           </div>
         </GlassCard>
       </template>
     </div>
 
-    <!-- CTA button (R3.4) -->
+    <!-- CTA button -->
     <GlassCard class="action-card">
       <h2>¿Listo para continuar?</h2>
       <p>Repasa tus tarjetas y gana más puntos</p>
@@ -105,12 +142,12 @@ function navigateTo(path: string) {
       </div>
     </GlassCard>
 
-    <!-- Recent badges (R3.5) -->
-    <section v-if="recentBadges.length > 0" class="recent-badges animate-fade-in-up" style="animation-delay: 300ms">
-      <h2>Últimas insignias</h2>
+    <!-- All badges -->
+    <section v-if="allBadges.length > 0" class="badges-section">
+      <h2>Mis insignias</h2>
       <div class="badges-list">
         <BadgeItem
-          v-for="badge in recentBadges"
+          v-for="badge in allBadges"
           :key="badge.id"
           :badge="badge"
           :unlocked-at="badge.unlockedAt"
@@ -122,11 +159,11 @@ function navigateTo(path: string) {
     <div class="quick-links">
       <a href="/badges" class="link-card">
         <span>🏆</span>
-        <span>Mis insignias</span>
+        <span>Insignias</span>
       </a>
       <a href="/profile" class="link-card">
         <span>👤</span>
-        <span>Mi perfil</span>
+        <span>Perfil</span>
       </a>
     </div>
   </div>
@@ -152,12 +189,49 @@ function navigateTo(path: string) {
 }
 
 @media (min-width: 768px) {
-  .greeting {
-    font-size: 1.5rem;
-  }
+  .greeting { font-size: 1.5rem; }
 }
 
-/* Stats grid: 2 columns on mobile, third card spans full width */
+/* Progress bar */
+.progress-card {
+  text-align: left;
+}
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.progress-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.progress-count {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+.progress-bar-track {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--glass-border);
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--color-primary);
+  transition: width 0.5s ease;
+}
+.progress-pct {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+/* Stats grid */
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -168,10 +242,6 @@ function navigateTo(path: string) {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-}
-
-.stat-card--full {
-  grid-column: 1 / -1;
 }
 
 .stat-icon {
@@ -222,7 +292,8 @@ function navigateTo(path: string) {
   flex-wrap: wrap;
 }
 
-.recent-badges h2 {
+/* Badges section */
+.badges-section h2 {
   font-size: 1rem;
   margin: 0 0 0.75rem;
   color: var(--color-text-primary);
@@ -259,14 +330,9 @@ function navigateTo(path: string) {
   transform: translateY(-2px);
 }
 
-/* Responsive: 3-column stats on wider screens */
 @media (min-width: 480px) {
   .stats-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .stat-card--full {
-    grid-column: auto;
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 </style>

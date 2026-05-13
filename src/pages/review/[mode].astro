@@ -1,7 +1,7 @@
 ---
 import AppLayout from '../../layouts/AppLayout.astro'
 import ReviewCard from '../../components/cards/ReviewCard.vue'
-import { createSupabaseServerClient } from '../../lib/supabase'
+import { createSupabaseClient } from '../../lib/supabase'
 import type { ReviewMode } from '../../types/app'
 
 const { mode } = Astro.params
@@ -11,7 +11,7 @@ if (mode !== 'self-assessment' && mode !== 'quiz') {
   return Astro.redirect('/review')
 }
 
-const supabase = createSupabaseServerClient(Astro.cookies)
+const supabase = createSupabaseClient(Astro.request, Astro.cookies)
 const { data: { user } } = await supabase.auth.getUser()
 if (!user) return Astro.redirect('/login')
 
@@ -39,20 +39,25 @@ if (!rawCards || rawCards.length === 0) {
   return Astro.redirect('/library')
 }
 
+// Shuffle and limit to 10 cards
+const shuffled = [...rawCards].sort(() => Math.random() - 0.5)
+const selectedCards = shuffled.slice(0, 10)
+
 // Map DB rows to Card type
-const cards = rawCards.map((c) => ({
+// Nota: la columna en DB es 'points_value', se mapea a 'points' del tipo Card
+const cards = selectedCards.map((c) => ({
   id: c.id,
   title: c.title,
   content: c.content,
   topic: c.topic,
   subtopic: c.subtopic,
   difficulty: c.difficulty,
-  points: c.points,
+  points: (c as any).points_value ?? (c as any).points ?? 0,
 }))
 
 const reviewMode = mode as ReviewMode
 ---
 
-<AppLayout title={reviewMode === 'self-assessment' ? 'Self-Assessment' : 'Quiz'}>
+<AppLayout title={reviewMode === 'self-assessment' ? 'Autoevaluación' : 'Quiz'}>
   <ReviewCard client:load cards={cards} mode={reviewMode} />
 </AppLayout>
