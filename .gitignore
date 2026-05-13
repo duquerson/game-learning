@@ -48,3 +48,9 @@ package-lock.json
 
 # Skills lock
 skills-lock.json
+
+# Supabase local
+supabase/.temp/
+
+# Generated files
+nul
