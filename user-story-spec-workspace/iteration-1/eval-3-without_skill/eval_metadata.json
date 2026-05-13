@@ -1,0 +1,32 @@
+{
+  "eval_id": 3,
+  "eval_name": "carrito-descuentos-dinamicos",
+  "prompt": "Ayúdame a definir la funcionalidad de un carrito de compras con descuentos dinámicos para un e-commerce. Los descuentos cambian según: cantidad de items (volumen), categoría de producto, y si el usuario es miembro premium. También hay cupones promocionales y descuentos por temporada. La plataforma es web.",
+  "assertions": [
+    {
+      "name": "genera-user-stories-gherkin",
+      "text": "El output contiene user stories en formato 'Como... Quiero... Para...' con Given/When/Then",
+      "expected": true
+    },
+    {
+      "name": "incluye-reglas-negocio",
+      "text": "El output documenta reglas de negocio para descuentos dinámicos",
+      "expected": true
+    },
+    {
+      "name": "incluye-tareas",
+      "text": "El output incluye lista de tareas ordenadas",
+      "expected": true
+    },
+    {
+      "name": "incluye-plan",
+      "text": "El output incluye plan técnico",
+      "expected": true
+    },
+    {
+      "name": "incluye-edge-cases",
+      "text": "El output cubre edge cases (cupones vencidos, overlaps, etc.)",
+      "expected": true
+    }
+  ]
+}

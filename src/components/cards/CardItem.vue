@@ -10,42 +10,26 @@ defineEmits<{ (e: 'click'): void }>()
 </script>
 
 <template>
-  <div class="card-item" :class="{ reviewed }" @click="$emit('click')">
-    <div class="card-top">
-      <span class="topic">{{ card.topic }}</span>
-      <span class="difficulty" :class="card.difficulty">{{ card.difficulty }}</span>
+  <div
+    class="btn-tactile cursor-pointer rounded-xl border border-(--glass-border) bg-(--glass-bg) p-4 backdrop-blur-(--glass-blur) transition-all hover:-translate-y-0.5 hover:shadow-(--glass-shadow)"
+    :class="{ '!border-(--color-success)/30': reviewed }"
+    @click="$emit('click')"
+  >
+    <div class="mb-2 flex items-center justify-between">
+      <span class="text-[0.7rem] font-bold uppercase tracking-wider text-(--color-primary)">{{ card.topic }}</span>
+      <span
+        class="rounded px-1.5 py-0.5 text-[0.7rem] font-semibold"
+        :class="card.difficulty === 'easy' ? 'bg-(--color-success)/15 text-(--color-success)' : card.difficulty === 'medium' ? 'bg-(--color-warning)/15 text-(--color-warning)' : 'bg-(--color-destructive)/15 text-(--color-destructive)'"
+      >{{ card.difficulty }}</span>
     </div>
-    <h3>{{ card.title }}</h3>
-    <p class="subtopic">{{ card.subtopic }}</p>
-    <div class="card-bottom">
-      <span class="points">+{{ card.points }} pts</span>
-      <span v-if="reviewed" class="reviewed-badge">✓ Repasada</span>
+    <h3 class="m-0 mb-1 text-[0.9375rem] font-semibold leading-tight text-(--color-text-primary)">{{ card.title }}</h3>
+    <p class="m-0 text-xs text-(--color-text-secondary)">{{ card.subtopic }}</p>
+    <div class="mt-3 flex items-center justify-between">
+      <span class="text-xs font-semibold text-(--color-accent-green)">+{{ card.points }} pts</span>
+      <span v-if="reviewed" class="flex items-center gap-1 text-[0.7rem] font-semibold text-(--color-success)">
+        <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Repasada
+      </span>
     </div>
   </div>
 </template>
-
-<style scoped>
-.card-item {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-card);
-  padding: 1rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.card-item:hover { transform: translateY(-2px); box-shadow: var(--glass-shadow); }
-.card-item.reviewed { border-color: rgba(16,185,129,0.3); }
-.card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-.topic { font-size: 0.7rem; text-transform: uppercase; color: var(--color-primary); font-weight: 700; letter-spacing: 0.05em; }
-.difficulty { font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.4rem; border-radius: 4px; }
-.difficulty.easy { background: rgba(16,185,129,0.15); color: var(--color-success); }
-.difficulty.medium { background: rgba(245,158,11,0.15); color: var(--color-accent); }
-.difficulty.hard { background: rgba(239,68,68,0.15); color: var(--color-error); }
-h3 { margin: 0 0 0.25rem; font-size: 0.9375rem; color: var(--color-text-primary); line-height: 1.3; }
-.subtopic { margin: 0; font-size: 0.75rem; color: var(--color-text-secondary); }
-.card-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; }
-.points { font-size: 0.75rem; font-weight: 600; color: var(--color-accent); }
-.reviewed-badge { font-size: 0.7rem; color: var(--color-success); font-weight: 600; }
-</style>

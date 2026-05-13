@@ -44,16 +44,31 @@ const shuffled = [...rawCards].sort(() => Math.random() - 0.5)
 const selectedCards = shuffled.slice(0, 10)
 
 // Map DB rows to Card type
-// Nota: la columna en DB es 'points_value', se mapea a 'points' del tipo Card
-const cards = selectedCards.map((c) => ({
-  id: c.id,
-  title: c.title,
-  content: c.content,
-  topic: c.topic,
-  subtopic: c.subtopic,
-  difficulty: c.difficulty,
-  points: (c as any).points_value ?? (c as any).points ?? 0,
-}))
+const cards = selectedCards.map((c) => {
+  const row = c as any
+  const rawOptions = row.options
+  const parsedOptions = Array.isArray(rawOptions) && rawOptions.length === 4
+    ? rawOptions.map((o: any) => ({ id: String(o.id || 'A'), text: String(o.text || '') }))
+    : [
+        { id: 'A', text: row.title },
+        { id: 'B', text: `Variacion de ${row.title}` },
+        { id: 'C', text: 'Otro concepto' },
+        { id: 'D', text: 'Ninguna de las anteriores' },
+      ] satisfies import('../../types/app').CardOption[]
+
+  return {
+    id: row.id,
+    title: row.title,
+    content: row.content,
+    topic: row.topic,
+    subtopic: row.subtopic ?? '',
+    difficulty: row.difficulty,
+    points: row.points_value ?? row.points ?? 10,
+    question: row.question || row.title,
+    options: parsedOptions,
+    correctAnswer: row.correct_answer || 'A',
+  }
+})
 
 const reviewMode = mode as ReviewMode
 ---

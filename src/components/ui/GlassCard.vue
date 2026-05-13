@@ -1,23 +1,18 @@
+<script setup lang="ts">
+withDefaults(defineProps<{
+  variant?: 'default' | 'interactive'
+}>(), {
+  variant: 'default',
+})
+</script>
+
 <template>
-  <div class="glass-card">
+  <div
+    class="glass data-[theme=light]:glass-light rounded-xl p-5 md:p-7"
+    :class="[
+      variant === 'interactive' ? 'btn-tactile cursor-pointer hover:-translate-y-0.5' : '',
+    ]"
+  >
     <slot />
   </div>
 </template>
-
-<style scoped>
-.glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-card);
-  box-shadow: var(--glass-shadow);
-  padding: 1.25rem;
-}
-
-@media (min-width: 768px) {
-  .glass-card {
-    padding: 1.75rem;
-  }
-}
-</style>

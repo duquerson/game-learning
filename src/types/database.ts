@@ -51,6 +51,9 @@ export type Database = {
           subtopic: string
           title: string
           topic: string
+          question: string
+          options: Json
+          correct_answer: string
         }
         Insert: {
           content: string
@@ -61,6 +64,9 @@ export type Database = {
           subtopic?: string
           title: string
           topic: string
+          question?: string
+          options?: Json
+          correct_answer?: string
         }
         Update: {
           content?: string
@@ -71,6 +77,9 @@ export type Database = {
           subtopic?: string
           title?: string
           topic?: string
+          question?: string
+          options?: Json
+          correct_answer?: string
         }
         Relationships: []
       }

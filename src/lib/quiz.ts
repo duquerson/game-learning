@@ -9,17 +9,14 @@ function shuffle<T>(arr: T[]): T[] {
   return a
 }
 
-export function generateQuizOptions(card: Card, topicCards: Card[], allCards: Card[]): QuizOption[] {
-  const sameTopicDistractors = topicCards.filter(c => c.id !== card.id)
-  const otherDistractors = allCards.filter(c => c.id !== card.id && c.topic !== card.topic)
+export function generateQuizOptions(card: Card): QuizOption[] {
+  const correctId = card.correctAnswer || 'A'
 
-  const distractorPool = shuffle([...sameTopicDistractors, ...otherDistractors])
-  const distractors = distractorPool.slice(0, 3)
-
-  const options: QuizOption[] = [
-    { id: card.id, title: card.title, isCorrect: true },
-    ...distractors.map(d => ({ id: d.id, title: d.title, isCorrect: false })),
-  ]
+  const options: QuizOption[] = card.options.map(opt => ({
+    id: opt.id,
+    title: opt.text,
+    isCorrect: opt.id === correctId,
+  }))
 
   return shuffle(options)
 }

@@ -1,16 +1,9 @@
-/* Fontsource Inter Variable Font Setup */
-@import '@fontsource-variable/inter/index.css';
-
-/* Font-face definition with variable weights 300-700 */
-@font-face {
-  font-family: 'Inter';
-  font-weight: 300 700;
-  font-display: swap;
-  font-stretch: 100%;
+/* Fonts loaded via Google Fonts @import in global.css */
+:root {
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
-/* System font stack fallback — referenciado por global.css @theme */
-:root {
-  --font-family-sans: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-mono: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+code, kbd, pre, samp, .font-mono,
+[class*="tabular-nums"] {
+  font-family: var(--font-family-mono);
 }

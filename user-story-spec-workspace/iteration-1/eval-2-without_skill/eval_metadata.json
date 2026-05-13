@@ -1,0 +1,32 @@
+{
+  "eval_id": 2,
+  "eval_name": "gamificacion-idiomas",
+  "prompt": "Quiero especificar un sistema de gamificación con niveles y badges para una plataforma de aprendizaje de idiomas. Los usuarios ganan XP por completar lecciones, rachas por días consecutivos, y desbloquean niveles. Hay 3 tipos de badge: por logro, por racha, y por competencia. La plataforma es web y mobile.",
+  "assertions": [
+    {
+      "name": "genera-user-stories-gherkin",
+      "text": "El output contiene user stories en formato 'Como... Quiero... Para...' con Given/When/Then",
+      "expected": true
+    },
+    {
+      "name": "incluye-behavioral-design",
+      "text": "El output aplica principios de behavioral design (rachas, loss aversion, etc.)",
+      "expected": true
+    },
+    {
+      "name": "incluye-tareas",
+      "text": "El output incluye lista de tareas ordenadas",
+      "expected": true
+    },
+    {
+      "name": "incluye-plan",
+      "text": "El output incluye plan técnico",
+      "expected": true
+    },
+    {
+      "name": "incluye-edge-cases",
+      "text": "El output cubre edge cases o escenarios de error",
+      "expected": true
+    }
+  ]
+}

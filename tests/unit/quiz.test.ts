@@ -2,113 +2,86 @@ import { describe, it, expect } from 'vitest'
 import * as fc from 'fast-check'
 import { generateQuizOptions } from '../../src/lib/quiz'
 import { calculatePoints } from '../../src/lib/points'
-import type { Card, SessionResult } from '../../src/types/app'
+import type { Card, SessionResult, CardOption } from '../../src/types/app'
 
 const DIFFICULTIES = ['easy', 'medium', 'hard'] as const
 
-// Arbitrary for a Card with a given id and topic
-const cardArb = (id: string, topic: string): Card => ({
-  id,
-  title: `Card-${id}`,
-  content: `Content for ${id}`,
-  topic,
-  subtopic: 'sub',
-  difficulty: 'easy',
-  points: 10,
-})
+function makeCard(id: string, topic: string): Card {
+  const optionA: CardOption = { id: 'A', text: `Respuesta correcta para ${id}` }
+  const optionB: CardOption = { id: 'B', text: `Distractor B para ${id}` }
+  const optionC: CardOption = { id: 'C', text: `Distractor C para ${id}` }
+  const optionD: CardOption = { id: 'D', text: `Distractor D para ${id}` }
+  return {
+    id,
+    title: `Card-${id}`,
+    content: `Content for ${id}`,
+    topic,
+    subtopic: 'sub',
+    difficulty: 'easy',
+    points: 10,
+    question: `Question for ${id}?`,
+    options: [optionA, optionB, optionC, optionD],
+    correctAnswer: 'A',
+  }
+}
 
-// Arbitrary that generates a Card with arbitrary id and topic
 const arbitraryCard = fc.record({
   id: fc.uuid(),
   topic: fc.constantFrom('JavaScript', 'TypeScript', 'CSS', 'HTML'),
-}).map(({ id, topic }) => cardArb(id, topic))
+}).map(({ id, topic }) => makeCard(id, topic))
 
 describe('generateQuizOptions', () => {
-  /**
-   * Property 7: Las opciones del Quiz son únicas y contienen la respuesta correcta
-   *
-   * Validates: Requirements R6.2, R6.3, R6.4
-   */
-  it('P7: siempre genera exactamente 4 opciones únicas con la respuesta correcta', () => {
-    // Generate: current card + at least 3 other cards with unique IDs
-    const scenario = fc.uniqueArray(fc.uuid(), { minLength: 4, maxLength: 20 }).chain((ids) => {
-      const [currentId, d1, d2, d3, ...rest] = ids
-      const currentCard = cardArb(currentId, 'JavaScript')
-
-      // topicCards: same topic as current card (at least 1 additional)
-      const topicCardIds = [d1, d2]
-      const topicCards = topicCardIds.map(id => cardArb(id, 'JavaScript'))
-
-      // allCards: remaining cards with different topic
-      const otherCards = [d3, ...rest].map(id => cardArb(id, 'TypeScript'))
-
-      return fc.constant({ currentCard, topicCards, allCards: otherCards })
+  it('P7: siempre genera exactamente 4 opciones unicas con la respuesta correcta', () => {
+    const scenario = fc.uniqueArray(fc.uuid(), { minLength: 1, maxLength: 10 }).chain((ids) => {
+      const card = makeCard(ids[0], 'JavaScript')
+      return fc.constant({ card })
     })
 
     fc.assert(
-      fc.property(scenario, ({ currentCard, topicCards, allCards }) => {
-        const options = generateQuizOptions(currentCard, topicCards, allCards)
+      fc.property(scenario, ({ card }) => {
+        const options = generateQuizOptions(card)
 
-        // 1. Exactly 4 options returned
         expect(options).toHaveLength(4)
 
-        // 2. All option titles are unique (no duplicates)
         const titles = options.map(o => o.title)
         expect(new Set(titles).size).toBe(4)
 
-        // 3. Exactly one option has isCorrect === true
         const correctOptions = options.filter(o => o.isCorrect)
         expect(correctOptions).toHaveLength(1)
 
-        // 4. The correct option's title matches the current card's title
-        expect(correctOptions[0].title).toBe(currentCard.title)
+        expect(correctOptions[0].id).toBe(card.correctAnswer)
       }),
       { numRuns: 100 }
     )
   })
-
-  it('P7: completa con tarjetas de otros topics si no hay suficientes del mismo', () => {
-    const target = cardArb('t1', 'JavaScript')
-    const topicCards = [cardArb('t2', 'JavaScript')]
-    const allCards = [
-      cardArb('t3', 'TypeScript'),
-      cardArb('t4', 'TypeScript'),
-      cardArb('t5', 'TypeScript'),
-    ]
-
-    const options = generateQuizOptions(target, topicCards, allCards)
-
-    expect(options).toHaveLength(4)
-    expect(new Set(options.map(o => o.id)).size).toBe(4)
-
-    const correctOptions = options.filter(o => o.isCorrect)
-    expect(correctOptions).toHaveLength(1)
-    expect(correctOptions[0].title).toBe(target.title)
-  })
 })
 
 describe('session simulation', () => {
-  /**
-   * Property 8: El conteo de resultados de sesión iguala el tamaño del deck
-   *
-   * Validates: Requirements R5.7, R6.8
-   */
-  it('P8: simular una sesión produce exactamente N SessionResult, uno por carta', () => {
+  it('P8: simular una sesion produce exactamente N SessionResult, uno por carta', () => {
     const deckArb = fc.integer({ min: 1, max: 20 }).chain((n) =>
       fc.tuple(
         fc.array(
           fc.record({
             id: fc.uuid(),
             difficulty: fc.constantFrom(...DIFFICULTIES),
-          }).map(({ id, difficulty }) => ({
-            id,
-            title: `Card-${id}`,
-            content: `Content for ${id}`,
-            topic: 'JavaScript',
-            subtopic: 'sub',
-            difficulty,
-            points: 10,
-          } satisfies Card)),
+          }).map(({ id, difficulty }) => {
+            const optionA: CardOption = { id: 'A', text: 'Correcta' }
+            const optionB: CardOption = { id: 'B', text: 'Incorrecta B' }
+            const optionC: CardOption = { id: 'C', text: 'Incorrecta C' }
+            const optionD: CardOption = { id: 'D', text: 'Incorrecta D' }
+            return {
+              id,
+              title: `Card-${id}`,
+              content: `Content for ${id}`,
+              topic: 'JavaScript',
+              subtopic: 'sub',
+              difficulty,
+              points: 10,
+              question: `Question for ${id}?`,
+              options: [optionA, optionB, optionC, optionD],
+              correctAnswer: 'A',
+            } satisfies Card
+          }),
           { minLength: n, maxLength: n }
         ),
         fc.array(fc.boolean(), { minLength: n, maxLength: n })
@@ -124,10 +97,8 @@ describe('session simulation', () => {
           pointsEarned: calculatePoints(card.difficulty, answers[i]),
         }))
 
-        // 1. Exactly N results
         expect(results).toHaveLength(deck.length)
 
-        // 2. Each result's cardId matches the corresponding card
         results.forEach((result, i) => {
           expect(result.cardId).toBe(deck[i].id)
         })

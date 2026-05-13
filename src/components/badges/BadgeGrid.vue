@@ -4,10 +4,13 @@ import type { Badge, UserBadge, BadgeLevel } from '../../types/app'
 import BadgeItem from './BadgeItem.vue'
 import EmptyState from '../ui/EmptyState.vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   badges: Badge[]
   unlockedBadges: UserBadge[]
-}>()
+}>(), {
+  badges: () => [],
+  unlockedBadges: () => [],
+})
 
 const unlockedMap = computed(() => {
   const map = new Map<string, string>()

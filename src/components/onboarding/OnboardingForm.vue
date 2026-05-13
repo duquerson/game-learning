@@ -7,7 +7,9 @@ import { getTopicIcon } from '../../utils/topics'
 import GlassCard from '../ui/GlassCard.vue'
 import GlassButton from '../ui/GlassButton.vue'
 
-const props = defineProps<{ topics: string[] }>()
+const props = withDefaults(defineProps<{ topics: string[] }>(), {
+  topics: () => [],
+})
 
 const step = ref(1)
 const selected = ref<string[]>([])

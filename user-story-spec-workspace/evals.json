@@ -1,0 +1,23 @@
+{
+  "skill_name": "user-story-spec",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Necesito definir los requerimientos para un sistema de notificaciones push en una app de fitness. Los usuarios quieren recibir recordatorios de entrenamiento, alertas de nuevos retos semanales, y notificaciones cuando un amigo supera su marca personal. La app es para iOS y Android, con usuarios que entrenan 3-4 veces por semana.",
+      "expected_output": "Documento de especificación en /spec/ con user stories, criterios Gherkin, plan técnico y tareas",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Quiero especificar un sistema de gamificación con niveles y badges para una plataforma de aprendizaje de idiomas. Los usuarios ganan XP por completar lecciones, rachas por días consecutivos, y desbloquean niveles. Hay 3 tipos de badge: por logro, por racha, y por competencia. La plataforma es web y mobile.",
+      "expected_output": "Documento de especificación con historias de usuario y diseño conductual integrado",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Ayúdame a definir la funcionalidad de un carrito de compras con descuentos dinámicos para un e-commerce. Los descuentos cambian según: cantidad de items (volumen), categoría de producto, y si el usuario es miembro premium. También hay cupones promocionales y descuentos por temporada. La plataforma es web.",
+      "expected_output": "Especificación completa con reglas de negocio, user stories, y tareas de implementación",
+      "files": []
+    }
+  ]
+}

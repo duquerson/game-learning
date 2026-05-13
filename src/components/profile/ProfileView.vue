@@ -63,288 +63,64 @@ async function saveTopics() {
 </script>
 
 <template>
-  <div class="profile-page">
-    <!-- Avatar -->
+  <div class="mx-auto flex max-w-[640px] flex-col gap-6 p-4">
     <GlassCard>
-      <div class="avatar-section">
-        <div class="avatar-circle">{{ initial }}</div>
-        <div class="avatar-info">
-          <h2 class="avatar-name">{{ email.split('@')[0] }}</h2>
-          <p class="avatar-email">{{ email }}</p>
+      <div class="flex items-center gap-4">
+        <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-(--color-primary) text-xl font-bold text-white">
+          {{ initial }}
+        </div>
+        <div>
+          <h2 class="m-0 text-lg font-semibold text-(--color-text-primary) capitalize">{{ email.split('@')[0] }}</h2>
+          <p class="m-0 text-xs text-(--color-text-secondary)">{{ email }}</p>
         </div>
       </div>
     </GlassCard>
 
-    <!-- Stats Section -->
     <GlassCard>
-      <div class="stats-section">
-        <h2 class="section-title">📊 Mis estadísticas</h2>
-
-        <div class="stats-grid">
-          <div class="stat-item">
-            <span class="stat-value">{{ totalPoints }}</span>
-            <span class="stat-label">⭐ Puntos totales</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value">{{ currentStreak }}</span>
-            <span class="stat-label">🔥 Racha actual</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value">{{ longestStreak }}</span>
-            <span class="stat-label">🏆 Racha máxima</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value">{{ totalReviewed }}</span>
-            <span class="stat-label">📚 Total repasadas</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value">{{ totalCorrect }}</span>
-            <span class="stat-label">✅ Total correctas</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value">{{ accuracyPercent }}%</span>
-            <span class="stat-label">🎯 Porcentaje de aciertos</span>
+      <div class="flex flex-col gap-3">
+        <h2 class="m-0 text-xl font-bold text-(--color-text-primary)">Mis estadisticas</h2>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div v-for="(stat, i) in statsList" :key="stat.label" class="flex flex-col items-center gap-1 rounded-(--radius-btn) border border-(--glass-border) bg-white/5 p-4 text-center">
+            <span class="text-2xl font-bold text-(--color-primary)">{{ stat.value }}</span>
+            <span class="text-xs text-(--color-text-secondary)">{{ stat.label }}</span>
           </div>
         </div>
       </div>
     </GlassCard>
 
-    <!-- Topics Section -->
     <GlassCard>
-      <div class="topics-section">
-        <h2 class="section-title">📖 Mis temas</h2>
-        <p class="section-subtitle">Selecciona los temas que quieres estudiar</p>
-
-        <div class="topics-grid">
+      <div class="flex flex-col gap-3">
+        <h2 class="m-0 text-xl font-bold text-(--color-text-primary)">Mis temas</h2>
+        <p class="m-0 text-sm text-(--color-text-secondary)">Selecciona los temas que quieres estudiar</p>
+        <div class="flex flex-wrap gap-3">
           <button
             v-for="topic in availableTopics"
             :key="topic"
             type="button"
-            class="topic-btn"
-            :class="{ active: selectedTopics.includes(topic) }"
+            class="btn-tactile touch-target relative flex min-w-[110px] flex-col items-center gap-2 rounded-xl border-2 border-(--glass-border) bg-white/5 p-5 text-sm font-semibold text-(--color-text-primary) transition-all hover:border-(--color-primary)"
+            :class="{ '!border-(--color-primary) !bg-(--color-primary)/10': selectedTopics.includes(topic) }"
             @click="toggleTopic(topic)"
           >
-            <span class="topic-icon">{{ getTopicIcon(topic) }}</span>
-            <span class="topic-label">{{ topic }}</span>
-            <span v-if="selectedTopics.includes(topic)" class="topic-check">✓</span>
+            <span class="text-lg">{{ getTopicIcon(topic) }}</span>
+            <span>{{ topic }}</span>
+            <svg v-if="selectedTopics.includes(topic)" class="absolute right-1.5 top-1.5 h-3.5 w-3.5 text-(--color-success)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
           </button>
         </div>
-
-        <p v-if="availableTopics.length === 0" class="empty-text">
-          No hay temas disponibles aún.
-        </p>
-
-        <GlassButton
-          @click="saveTopics"
-          :disabled="loading || selectedTopics.length === 0"
-        >
+        <p v-if="availableTopics.length === 0" class="m-0 text-sm text-(--color-text-secondary)">No hay temas disponibles aun.</p>
+        <GlassButton @click="saveTopics" :disabled="loading || selectedTopics.length === 0" class="self-start">
           {{ loading ? 'Guardando...' : 'Guardar temas' }}
         </GlassButton>
       </div>
     </GlassCard>
 
-    <!-- Badges Section -->
     <GlassCard v-if="badges && badges.length > 0">
-      <div class="badges-section">
-        <h2 class="section-title">🏆 Mis insignias</h2>
-        <div class="badges-list">
-          <BadgeItem
-            v-for="badge in badges"
-            :key="badge.id"
-            :badge="badge"
-            :unlocked-at="badge.unlockedAt"
-          />
+      <div class="flex flex-col gap-3">
+        <h2 class="m-0 text-xl font-bold text-(--color-text-primary)">Mis insignias</h2>
+        <div class="flex flex-col gap-2">
+          <BadgeItem v-for="badge in badges" :key="badge.id" :badge="badge" :unlocked-at="badge.unlockedAt" />
         </div>
       </div>
     </GlassCard>
   </div>
 </template>
 
-<style scoped>
-.profile-page {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-/* Avatar */
-.avatar-section {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.avatar-circle {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-.avatar-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-}
-.avatar-name {
-  margin: 0;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  text-transform: capitalize;
-}
-.avatar-email {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--color-text-secondary);
-}
-
-/* Badges section */
-.badges-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.badges-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.stats-section,
-.topics-section,
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.section-title {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-}
-
-.section-subtitle {
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-}
-
-.email-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-btn);
-  border: 1px solid var(--glass-border);
-}
-
-.stat-icon {
-  font-size: 1rem;
-}
-
-.email-text {
-  font-size: 0.9rem;
-  color: var(--color-text-primary);
-  word-break: break-all;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-}
-
-@media (min-width: 480px) {
-  .stats-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 1rem 0.5rem;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-btn);
-  border: 1px solid var(--glass-border);
-  text-align: center;
-}
-
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-primary);
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-}
-
-.topics-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.topic-btn {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1.25rem 1.5rem;
-  border: 2px solid var(--glass-border);
-  border-radius: var(--radius-card);
-  background: rgba(255, 255, 255, 0.08);
-  cursor: pointer;
-  transition: all 0.2s;
-  min-width: 110px;
-}
-
-.topic-btn:hover {
-  border-color: var(--color-primary);
-}
-
-.topic-btn.active {
-  border-color: var(--color-primary);
-  background: rgba(124, 58, 237, 0.15);
-}
-
-.topic-icon {
-  font-size: 1.75rem;
-}
-
-.topic-label {
-  font-weight: 600;
-  color: var(--color-text-primary);
-  font-size: 0.875rem;
-}
-
-.topic-check {
-  position: absolute;
-  top: 0.4rem;
-  right: 0.5rem;
-  color: var(--color-success);
-  font-size: 0.875rem;
-  font-weight: 700;
-}
-
-.empty-text {
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
-}
-</style>

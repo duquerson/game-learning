@@ -3,29 +3,37 @@ import { ref } from 'vue'
 import { actions, isInputError } from 'astro:actions'
 import { toast } from 'vue-sonner'
 import GlassCard from '../ui/GlassCard.vue'
-import GlassButton from '../ui/GlassButton.vue'
 import OAuthButtons from './OAuthButtons.vue'
 
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const loading = ref(false)
+const emailError = ref('')
+const passwordError = ref('')
+const confirmError = ref('')
 
 async function handleRegister() {
+  emailError.value = ''
+  passwordError.value = ''
+  confirmError.value = ''
   if (!email.value || !password.value || !confirmPassword.value) {
     toast.error('Completa todos los campos para continuar.')
     return
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    toast.error('Ingresa un email válido.')
+    emailError.value = 'Ingresa un email válido.'
+    toast.error(emailError.value)
     return
   }
   if (password.value.length < 8) {
-    toast.error('La contraseña debe tener al menos 8 caracteres.')
+    passwordError.value = 'La contraseña debe tener al menos 8 caracteres.'
+    toast.error(passwordError.value)
     return
   }
   if (password.value !== confirmPassword.value) {
-    toast.error('Las contraseñas no coinciden.')
+    confirmError.value = 'Las contraseñas no coinciden.'
+    toast.error(confirmError.value)
     return
   }
   loading.value = true
@@ -36,6 +44,8 @@ async function handleRegister() {
     })
     if (error) {
       if (isInputError(error)) {
+        if (error.fields.email) emailError.value = error.fields.email[0]
+        if (error.fields.password) passwordError.value = error.fields.password[0]
         const firstMessage = Object.values(error.fields).flat()[0]
         toast.error(firstMessage ?? 'Datos inválidos. Revisa los campos.')
       } else {
@@ -44,7 +54,7 @@ async function handleRegister() {
       return
     }
     if (data?.success && data.redirect) {
-      toast.success('¡Cuenta creada! Configurando tu perfil…')
+      toast.success('Cuenta creada. Configurando tu perfil…')
       setTimeout(() => {
         window.location.href = data.redirect!
       }, 800)
@@ -58,17 +68,22 @@ async function handleRegister() {
 </script>
 
 <template>
-  <div class="form-shell">
+  <div class="w-full sm:max-w-sm mx-auto">
     <GlassCard>
-      <form @submit.prevent="handleRegister" class="auth-form" novalidate>
+      <form @submit.prevent="handleRegister" class="flex flex-col gap-5" novalidate>
 
-        <div class="form-header">
-          <h1 class="form-title">Crear cuenta</h1>
-          <p class="form-subtitle">Empieza tu viaje de aprendizaje</p>
+        <div class="flex flex-col gap-1">
+          <h1 class="m-0 text-h1 text-(--color-text-primary)">Crear cuenta</h1>
+          <p
+            class="m-0 text-sm text-(--color-text-secondary)"
+            :class="loading ? 'skeleton-pulse rounded' : ''"
+          >
+            Empieza tu viaje de aprendizaje
+          </p>
         </div>
 
-        <div class="field">
-          <label for="reg-email" class="field-label">Email</label>
+        <div class="flex flex-col gap-1.5">
+          <label for="reg-email" class="text-sm font-medium text-(--color-text-secondary)">Email</label>
           <input
             id="reg-email"
             v-model="email"
@@ -76,12 +91,13 @@ async function handleRegister() {
             placeholder="tu@email.com"
             autocomplete="email"
             :disabled="loading"
-            class="field-input"
+            class="w-full border-(--color-border) rounded-lg p-3 text-sm bg-transparent text-(--color-text-primary) placeholder:text-(--color-text-muted) transition-[border-color] duration-150 focus:outline-none focus:border-(--color-primary) disabled:opacity-50 disabled:cursor-not-allowed"
           />
+          <p v-if="emailError" class="text-xs text-(--color-destructive) m-0">{{ emailError }}</p>
         </div>
 
-        <div class="field">
-          <label for="reg-password" class="field-label">Contraseña</label>
+        <div class="flex flex-col gap-1.5">
+          <label for="reg-password" class="text-sm font-medium text-(--color-text-secondary)">Contraseña</label>
           <input
             id="reg-password"
             v-model="password"
@@ -89,12 +105,13 @@ async function handleRegister() {
             placeholder="Mínimo 8 caracteres"
             autocomplete="new-password"
             :disabled="loading"
-            class="field-input"
+            class="w-full border-(--color-border) rounded-lg p-3 text-sm bg-transparent text-(--color-text-primary) placeholder:text-(--color-text-muted) transition-[border-color] duration-150 focus:outline-none focus:border-(--color-primary) disabled:opacity-50 disabled:cursor-not-allowed"
           />
+          <p v-if="passwordError" class="text-xs text-(--color-destructive) m-0">{{ passwordError }}</p>
         </div>
 
-        <div class="field">
-          <label for="reg-confirm" class="field-label">Confirmar contraseña</label>
+        <div class="flex flex-col gap-1.5">
+          <label for="reg-confirm" class="text-sm font-medium text-(--color-text-secondary)">Confirmar contraseña</label>
           <input
             id="reg-confirm"
             v-model="confirmPassword"
@@ -102,137 +119,31 @@ async function handleRegister() {
             placeholder="Repite tu contraseña"
             autocomplete="new-password"
             :disabled="loading"
-            class="field-input"
+            class="w-full border-(--color-border) rounded-lg p-3 text-sm bg-transparent text-(--color-text-primary) placeholder:text-(--color-text-muted) transition-[border-color] duration-150 focus:outline-none focus:border-(--color-primary) disabled:opacity-50 disabled:cursor-not-allowed"
           />
+          <p v-if="confirmError" class="text-xs text-(--color-destructive) m-0">{{ confirmError }}</p>
         </div>
 
-        <GlassButton type="submit" :disabled="loading" class="submit-btn">
-          <span v-if="loading" class="spinner" aria-hidden="true" />
+        <button
+          type="submit"
+          :disabled="loading"
+          class="touch-target btn-tactile inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3 font-semibold text-sm bg-(--color-primary) text-white border-none hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          <svg v-if="loading" class="animate-spin h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-30" />
+            <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+          </svg>
           {{ loading ? 'Creando cuenta…' : 'Crear cuenta' }}
-        </GlassButton>
+        </button>
 
         <OAuthButtons />
 
-        <p class="switch-link">
+        <p class="text-center text-sm text-(--color-text-secondary) m-0">
           ¿Ya tienes cuenta?
-          <a href="/login">Iniciar sesión</a>
+          <a href="/login" class="text-(--color-primary) no-underline font-medium hover:opacity-80">Iniciar sesión</a>
         </p>
 
       </form>
     </GlassCard>
   </div>
 </template>
-
-<style scoped>
-.form-shell {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.form-header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 0.25rem;
-}
-
-.form-title {
-  margin: 0;
-  font-size: 1.375rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  line-height: 1.2;
-}
-
-.form-subtitle {
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-.field-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-}
-
-.field-input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-btn);
-  background: var(--glass-bg);
-  color: var(--color-text-primary);
-  font-size: 0.9375rem;
-  font-family: inherit;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-.field-input::placeholder {
-  color: var(--color-text-muted);
-}
-
-.field-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
-.field-input:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.submit-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.spinner {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-  flex-shrink: 0;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.switch-link {
-  text-align: center;
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-  margin: 0;
-}
-
-.switch-link a {
-  color: var(--color-primary);
-  text-decoration: none;
-  font-weight: 500;
-  transition: opacity 0.15s ease;
-}
-
-.switch-link a:hover {
-  opacity: 0.8;
-}
-</style>

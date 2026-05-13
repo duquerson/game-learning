@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { Badge } from '../../types/app'
 
 const props = defineProps<{
@@ -6,173 +7,50 @@ const props = defineProps<{
   unlockedAt: string | null
 }>()
 
-const formattedDate = props.unlockedAt
+const formattedDate = computed(() => props.unlockedAt
   ? new Date(props.unlockedAt).toLocaleDateString()
   : null
+)
 
 const levelLabels: Record<string, string> = {
-  basic: 'Básico',
+  basic: 'Basico',
   intermediate: 'Intermedio',
   advanced: 'Avanzado',
-}
-
-const levelColors: Record<string, string> = {
-  basic: 'level-basic',
-  intermediate: 'level-intermediate',
-  advanced: 'level-advanced',
 }
 
 const categoryLabels: Record<string, string> = {
   achievement: 'logro',
   streak: 'racha',
-  mastery: 'maestría',
+  mastery: 'maestria',
 }
 </script>
 
 <template>
-  <div class="badge-item" :class="{ locked: !unlockedAt }">
-    <div class="icon-wrap">
-      <span class="icon">{{ badge.icon }}</span>
-      <span v-if="!unlockedAt" class="lock-overlay" aria-hidden="true">🔒</span>
+  <div
+    class="flex items-start gap-4 rounded-xl border border-(--glass-border) bg-(--glass-bg) p-4 shadow-(--glass-shadow) backdrop-blur-(--glass-blur) transition-all"
+    :class="unlockedAt ? '!border-(--color-primary)' : 'opacity-40'"
+  >
+    <div class="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-white/15">
+      <svg v-if="unlockedAt" class="h-6 w-6 text-(--color-accent-green)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+      <svg v-else class="h-6 w-6 text-(--color-text-muted)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
     </div>
 
-    <div class="info">
-      <div class="name-row">
-        <span class="name">{{ badge.name }}</span>
-        <span class="level-chip" :class="levelColors[badge.level]">
-          {{ levelLabels[badge.level] }}
-        </span>
-        <span v-if="badge.category" class="category-chip">
-          {{ categoryLabels[badge.category] || badge.category }}
-        </span>
+    <div class="min-w-0 flex-1">
+      <div class="mb-1 flex flex-wrap items-center gap-2">
+        <span class="text-[0.95rem] font-semibold text-(--color-text-primary)">{{ badge.name }}</span>
+        <span
+          class="rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider"
+          :class="badge.level === 'basic' ? 'bg-(--color-success)/20 text-(--color-success)' : badge.level === 'intermediate' ? 'bg-(--color-warning)/20 text-(--color-warning)' : 'bg-(--color-primary)/20 text-(--color-primary)'"
+        >{{ levelLabels[badge.level] }}</span>
+        <span v-if="badge.category" class="rounded-full bg-info/15 px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wider text-info">{{ categoryLabels[badge.category] }}</span>
       </div>
 
-      <p class="description">{{ badge.description }}</p>
+      <p class="m-0 text-[0.78rem] leading-relaxed text-(--color-text-secondary)">{{ badge.description }}</p>
 
-      <span v-if="formattedDate" class="unlock-date">
+      <span v-if="formattedDate" class="mt-1 block text-[0.72rem] font-medium text-(--color-success)">
         Desbloqueada el {{ formattedDate }}
       </span>
-      <span v-else class="locked-label">Bloqueada</span>
+      <span v-else class="mt-1 block text-[0.72rem] italic text-(--color-text-secondary)">Bloqueada</span>
     </div>
   </div>
 </template>
-
-<style scoped>
-.badge-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: var(--radius-card);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  transition: opacity 0.2s ease, border-color 0.2s ease;
-}
-
-.badge-item:not(.locked) {
-  border-color: var(--color-primary);
-}
-
-.badge-item.locked {
-  opacity: 0.4;
-}
-
-.icon-wrap {
-  position: relative;
-  flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 50%;
-}
-
-.icon {
-  font-size: 1.75rem;
-  line-height: 1;
-}
-
-.lock-overlay {
-  position: absolute;
-  bottom: -4px;
-  right: -4px;
-  font-size: 0.85rem;
-}
-
-.info {
-  flex: 1;
-  min-width: 0;
-}
-
-.name-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.25rem;
-}
-
-.name {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
-.level-chip {
-  font-size: 0.65rem;
-  font-weight: 600;
-  padding: 0.15rem 0.5rem;
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.level-basic {
-  background: rgba(16, 185, 129, 0.2);
-  color: var(--color-success);
-}
-.category-chip {
-  font-size: 0.65rem;
-  font-weight: 500;
-  padding: 0.15rem 0.5rem;
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background: rgba(96, 165, 250, 0.15);
-  color: var(--color-accent-blue, #60a5fa);
-}
-
-.level-intermediate {
-  background: rgba(245, 158, 11, 0.2);
-  color: var(--color-accent);
-}
-
-.level-advanced {
-  background: rgba(124, 58, 237, 0.2);
-  color: var(--color-primary);
-}
-
-.description {
-  margin: 0 0 0.25rem;
-  font-size: 0.78rem;
-  color: var(--color-text-secondary);
-  line-height: 1.4;
-}
-
-.unlock-date {
-  font-size: 0.72rem;
-  color: var(--color-success);
-  font-weight: 500;
-}
-
-.locked-label {
-  font-size: 0.72rem;
-  color: var(--color-text-secondary);
-  font-style: italic;
-}
-</style>

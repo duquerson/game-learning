@@ -7,11 +7,15 @@ import CardItem from './CardItem.vue'
 import SkeletonLoader from '../ui/SkeletonLoader.vue'
 import EmptyState from '../ui/EmptyState.vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   cards: DbCard[]
   reviewedIds: string[]
   loading?: boolean
-}>()
+}>(), {
+  cards: () => [],
+  reviewedIds: () => [],
+  loading: false,
+})
 
 const searchQuery = ref('')
 const topicFilter = ref('all')
@@ -20,7 +24,7 @@ const difficultyFilter = ref('all')
 const sortBy = ref('topic')
 const selectedCard = ref<DbCard | null>(null)
 
-const reviewedSet = computed(() => new Set(props.reviewedIds))
+const reviewedSet = computed(() => new Set(props.reviewedIds ?? []))
 
 const topics = computed(() => [...new Set(props.cards.map(c => c.topic))].sort())
 const subtopics = computed(() => {
@@ -54,7 +58,7 @@ const filteredCards = computed(() => {
 })
 
 const allReviewed = computed(() =>
-  filteredCards.value.length > 0 && filteredCards.value.every(c => reviewedSet.has(c.id))
+  filteredCards.value.length > 0 && filteredCards.value.every(c => reviewedSet.value.has(c.id))
 )
 
 const groupedCards = computed(() => {
@@ -78,55 +82,55 @@ function clearFilters() {
 </script>
 
 <template>
-  <div class="library">
-    <div class="library-header">
+  <div class="mx-auto max-w-[900px]">
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
-        <h1>Biblioteca</h1>
-        <p class="count">{{ filteredCards.length }} tarjetas</p>
+        <h1 class="font-heading m-0 text-xl text-(--color-text-primary) sm:text-2xl tracking-tight">Biblioteca</h1>
+        <p class="m-0 mt-1 text-sm text-(--color-text-secondary)">{{ filteredCards.length }} tarjetas</p>
       </div>
-      <GlassButton @click="() => window.location.href = '/review'">
-        Iniciar repaso →
+      <GlassButton class="btn-tactile" @click="() => window.location.href = '/review'">
+        Iniciar repaso
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </GlassButton>
     </div>
 
-    <!-- Search -->
-    <div class="search-bar">
-      <span class="search-icon">🔍</span>
+    <div class="flex items-center gap-2 rounded-(--radius-btn) border border-(--glass-border) bg-(--glass-bg) p-2.5 mb-4">
+      <svg class="h-4 w-4 shrink-0 text-(--color-text-muted)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input
         v-model="searchQuery"
         type="text"
-        placeholder="Buscar por título o contenido..."
-        class="search-input"
+        placeholder="Buscar por titulo o contenido..."
+        class="flex-1 border-none bg-transparent text-sm text-(--color-text-primary) outline-none placeholder:text-(--color-text-muted)"
       />
     </div>
 
-    <!-- Filters -->
-    <div class="filters">
-      <select v-model="topicFilter" @change="subtopicFilter = 'all'">
+    <div class="flex flex-wrap gap-2 mb-6">
+      <select v-model="topicFilter" @change="subtopicFilter = 'all'" class="touch-target flex-1 min-w-0 rounded-(--radius-btn) border border-(--glass-border) bg-(--glass-bg) px-3 py-2 text-xs text-(--color-text-primary) cursor-pointer sm:flex-none">
         <option value="all">Todos los temas</option>
         <option v-for="t in topics" :key="t" :value="t">{{ t }}</option>
       </select>
 
-      <select v-model="subtopicFilter">
+      <select v-model="subtopicFilter" class="touch-target flex-1 min-w-0 rounded-(--radius-btn) border border-(--glass-border) bg-(--glass-bg) px-3 py-2 text-xs text-(--color-text-primary) cursor-pointer sm:flex-none">
         <option value="all">Todos los subtemas</option>
         <option v-for="s in subtopics" :key="s" :value="s">{{ s }}</option>
       </select>
 
-      <select v-model="difficultyFilter">
+      <select v-model="difficultyFilter" class="touch-target flex-1 min-w-0 rounded-(--radius-btn) border border-(--glass-border) bg-(--glass-bg) px-3 py-2 text-xs text-(--color-text-primary) cursor-pointer sm:flex-none">
         <option value="all">Todas las dificultades</option>
-        <option value="easy">Fácil</option>
+        <option value="easy">Facil</option>
         <option value="medium">Medio</option>
-        <option value="hard">Difícil</option>
+        <option value="hard">Dificil</option>
       </select>
 
-      <select v-model="sortBy">
+      <select v-model="sortBy" class="touch-target flex-1 min-w-0 rounded-(--radius-btn) border border-(--glass-border) bg-(--glass-bg) px-3 py-2 text-xs text-(--color-text-primary) cursor-pointer sm:flex-none">
         <option value="topic">Tema (A-Z)</option>
-        <option value="difficulty-asc">Dificultad (menor a mayor)</option>
-        <option value="difficulty-desc">Dificultad (mayor a menor)</option>
+        <option value="difficulty-asc">Dificultad ascendente</option>
+        <option value="difficulty-desc">Dificultad descendente</option>
       </select>
 
-      <button v-if="topicFilter !== 'all' || difficultyFilter !== 'all' || subtopicFilter !== 'all' || searchQuery || sortBy !== 'topic'" class="clear-btn" @click="clearFilters">
-        Limpiar filtros ✕
+      <button v-if="topicFilter !== 'all' || difficultyFilter !== 'all' || subtopicFilter !== 'all' || searchQuery || sortBy !== 'topic'" class="btn-tactile touch-target flex items-center gap-1 rounded-(--radius-btn) border border-(--glass-border) bg-transparent px-3 py-2 text-xs text-(--color-text-secondary) hover:border-(--color-error) hover:text-(--color-error)" @click="clearFilters">
+        Limpiar filtros
+        <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
 
@@ -135,13 +139,15 @@ function clearFilters() {
       <SkeletonLoader variant="card" :count="6" />
     </div>
 
-    <!-- Grouped cards -->
-    <div v-else-if="filteredCards.length > 0 && !allReviewed" class="grouped-view">
-      <div v-for="(subtopics, topic) in groupedCards" :key="topic" class="topic-section">
-        <h2 class="topic-title">{{ topic }}</h2>
-        <div v-for="(cards, subtopic) in subtopics" :key="subtopic" class="subtopic-section">
-          <h3 class="subtopic-title">{{ subtopic }} <span class="count-badge">{{ cards.length }}</span></h3>
-          <div class="cards-grid">
+    <div v-else-if="filteredCards.length > 0 && !allReviewed" class="flex flex-col gap-6">
+      <div v-for="(subtopics, topic) in groupedCards" :key="topic">
+        <h2 class="font-heading m-0 mb-2 text-lg font-bold capitalize text-(--color-text-primary)">{{ topic }}</h2>
+        <div v-for="(cards, subtopic) in subtopics" :key="subtopic" class="mb-4">
+          <h3 class="m-0 mb-3 flex items-center gap-2 text-sm font-semibold text-(--color-text-secondary)">
+            {{ subtopic }}
+            <span class="rounded-full bg-(--glass-bg) px-2 py-0.5 text-xs font-medium text-(--color-text-muted)">{{ cards.length }}</span>
+          </h3>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <CardItem
               v-for="card in cards"
               :key="card.id"
@@ -154,37 +160,36 @@ function clearFilters() {
       </div>
     </div>
 
-    <!-- All reviewed -->
     <EmptyState
       v-else-if="allReviewed"
-      icon="🎉"
-      title="¡Todo al día!"
+      icon="star"
+      title="Todo al dia"
       description="Has repasado todas las tarjetas disponibles. Vuelve pronto para nuevo contenido o repasa las que hayas respondido incorrectamente."
     />
 
-    <!-- No results -->
     <EmptyState
       v-else
-      icon="🔍"
+      icon="alert"
       title="No se encontraron tarjetas"
       description="Prueba con otros filtros o explora todos los temas disponibles."
       ctaLabel="Limpiar filtros"
       @cta-click="clearFilters"
     />
 
-    <!-- Modal de detalle -->
-    <div v-if="selectedCard" class="modal-overlay" @click.self="selectedCard = null">
-      <GlassCard class="modal-card">
-        <div class="modal-header">
-          <span class="topic-tag">{{ selectedCard.topic }}</span>
-          <button class="close-btn" @click="selectedCard = null" aria-label="Cerrar">✕</button>
+    <div v-if="selectedCard" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="selectedCard = null">
+      <GlassCard class="max-h-[80vh] w-full max-w-[500px] overflow-y-auto">
+        <div class="mb-4 flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wide text-(--color-primary)">{{ selectedCard.topic }}</span>
+          <button class="btn-tactile flex h-8 w-8 items-center justify-center rounded-full text-sm text-(--color-text-secondary) hover:bg-white/10" @click="selectedCard = null" aria-label="Cerrar">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
-        <h2>{{ selectedCard.title }}</h2>
-        <p class="subtopic-label">{{ selectedCard.subtopic }}</p>
-        <div class="content">{{ selectedCard.content }}</div>
-        <div class="modal-footer">
-          <span class="difficulty" :class="selectedCard.difficulty">{{ selectedCard.difficulty }}</span>
-          <span class="points">+{{ selectedCard.points }} pts</span>
+        <h2 class="m-0 mb-1 text-xl font-bold text-(--color-text-primary) font-heading">{{ selectedCard.title }}</h2>
+        <p class="m-0 mb-4 text-xs text-(--color-text-secondary)">{{ selectedCard.subtopic }}</p>
+        <div class="whitespace-pre-wrap text-sm leading-relaxed text-(--color-text-primary)">{{ selectedCard.content }}</div>
+        <div class="mt-4 flex items-center justify-between border-t border-(--glass-border) pt-4">
+          <span class="rounded px-2 py-1 text-xs font-semibold" :class="selectedCard.difficulty === 'easy' ? 'bg-(--color-success)/15 text-(--color-success)' : selectedCard.difficulty === 'medium' ? 'bg-(--color-warning)/15 text-(--color-warning)' : 'bg-(--color-destructive)/15 text-(--color-destructive)'">{{ selectedCard.difficulty }}</span>
+          <span class="text-sm font-semibold text-(--color-accent-green)">+{{ selectedCard.points }} pts</span>
         </div>
       </GlassCard>
     </div>
@@ -192,93 +197,5 @@ function clearFilters() {
 </template>
 
 <style scoped>
-.library { max-width: 900px; margin: 0 auto; }
-.library-header {
-  display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;
-}
-@media (min-width: 480px) {
-  .library-header { flex-direction: row; justify-content: space-between; align-items: flex-start; }
-}
-h1 { margin: 0; font-size: 1.25rem; color: var(--color-text-primary); }
-@media (min-width: 768px) { h1 { font-size: 1.5rem; } }
-.count { margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--color-text-secondary); }
-
-/* Search */
-.search-bar {
-  display: flex; align-items: center; gap: 0.5rem;
-  margin-bottom: 1rem;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-btn);
-  background: var(--glass-bg);
-}
-.search-icon { font-size: 0.875rem; }
-.search-input {
-  flex: 1; border: none; background: transparent;
-  color: var(--color-text-primary); font-size: 0.875rem;
-  font-family: inherit; outline: none;
-}
-.search-input::placeholder { color: var(--color-text-muted); }
-
-/* Filters */
-.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-select {
-  padding: 0.5rem 0.75rem; border: 1px solid var(--glass-border);
-  border-radius: var(--radius-btn); background: var(--glass-bg);
-  color: var(--color-text-primary); font-size: 0.8125rem; cursor: pointer;
-  min-width: 0; flex: 1 1 auto;
-}
-@media (min-width: 480px) { select { flex: 0 1 auto; } }
-.clear-btn {
-  padding: 0.5rem 0.75rem; border: 1px solid var(--glass-border);
-  border-radius: var(--radius-btn); background: transparent;
-  color: var(--color-text-secondary); font-size: 0.8125rem; cursor: pointer;
-}
-.clear-btn:hover { color: var(--color-error); border-color: var(--color-error); }
-
-/* Grouped view */
-.grouped-view { display: flex; flex-direction: column; gap: 1.5rem; }
-.topic-title {
-  margin: 0 0 0.5rem; font-size: 1.125rem; font-weight: 700;
-  color: var(--color-text-primary); text-transform: capitalize;
-}
-.subtopic-section { margin-bottom: 1rem; }
-.subtopic-title {
-  margin: 0 0 0.75rem; font-size: 0.875rem; font-weight: 600;
-  color: var(--color-text-secondary); display: flex; align-items: center; gap: 0.5rem;
-}
-.count-badge {
-  font-size: 0.75rem; font-weight: 500;
-  background: var(--glass-bg); color: var(--color-text-muted);
-  padding: 0.125rem 0.5rem; border-radius: 99px;
-}
-
-/* Cards grid */
-.cards-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.75rem;
-}
-@media (min-width: 480px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 900px) { .cards-grid { grid-template-columns: repeat(3, 1fr); } }
-
-/* Modal */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-  display: flex; align-items: center; justify-content: center;
-  padding: 1rem; z-index: 100;
-}
-.modal-card { max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-.topic-tag { font-size: 0.75rem; text-transform: uppercase; color: var(--color-primary); font-weight: 600; }
-.close-btn { background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--color-text-secondary); }
-h2 { margin: 0 0 0.25rem; font-size: 1.25rem; color: var(--color-text-primary); }
-.subtopic-label { margin: 0 0 1rem; font-size: 0.75rem; color: var(--color-text-secondary); }
-.content { font-size: 0.875rem; color: var(--color-text-primary); line-height: 1.7; white-space: pre-wrap; }
-.modal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--glass-border); }
-.difficulty { font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 4px; }
-.difficulty.easy { background: rgba(16,185,129,0.15); color: var(--color-success); }
-.difficulty.medium { background: rgba(245,158,11,0.15); color: var(--color-accent); }
-.difficulty.hard { background: rgba(239,68,68,0.15); color: var(--color-error); }
-.points { font-size: 0.875rem; font-weight: 600; color: var(--color-accent); }
+select option { background: oklch(15% 0.015 250); color: oklch(98% 0 0); }
 </style>

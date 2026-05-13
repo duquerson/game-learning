@@ -11,6 +11,14 @@ export interface Card {
   subtopic: string
   difficulty: Difficulty
   points: number
+  question: string
+  options: CardOption[]
+  correctAnswer: string
+}
+
+export interface CardOption {
+  id: string // 'A' | 'B' | 'C' | 'D'
+  text: string
 }
 
 export interface Badge {
@@ -48,8 +56,8 @@ export interface SessionResult {
 }
 
 export interface QuizOption {
-  id: string
-  title: string
+  id: string       // card id for the correct one, 'A'|'B'|'C'|'D' for distractors
+  title: string    // display text
   isCorrect: boolean
 }
 

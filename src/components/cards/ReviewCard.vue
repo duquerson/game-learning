@@ -18,7 +18,6 @@ const props = defineProps<{
 const store = useReviewStore()
 const { isFlipped, flipCard, handleAnswer: _handleAnswer } = useReviewSession()
 
-/** Navega a /results pasando los datos de la sesión como query params (fallback para refresh). */
 function navigateToResults() {
   const total = store.sessionResults.length
   const correct = store.sessionResults.filter(r => r.correct).length
@@ -94,11 +93,6 @@ const selectedOptionId = ref<string | null>(null)
 const answered = ref(false)
 const currentCardContent = ref('')
 
-const topicCards = computed(() => {
-  if (!store.currentCard) return []
-  return props.cards.filter(c => c.topic === store.currentCard!.topic)
-})
-
 watch(
   () => store.currentCard,
   (card) => {
@@ -106,7 +100,7 @@ watch(
     answered.value = false
     currentCardContent.value = ''
     if (card) {
-      quizOptions.value = generateQuizOptions(card, topicCards.value, props.cards)
+      quizOptions.value = generateQuizOptions(card)
       currentCardContent.value = card.content
       startTimer()
     } else {
@@ -136,23 +130,37 @@ async function selectOption(option: QuizOption) {
 }
 
 function optionClass(option: QuizOption): string {
-  if (!answered.value) return 'quiz-option--default'
-  if (option.isCorrect) return 'quiz-option--correct'
-  if (option.id === selectedOptionId.value) return 'quiz-option--wrong'
-  return 'quiz-option--muted'
+  if (!answered.value) return 'glass text-[--color-text-primary] hover:bg-white/12'
+  if (option.isCorrect) return 'border-[--color-success]/40 bg-[--color-success]/15 text-[--color-success]'
+  if (option.id === selectedOptionId.value) return 'border-[--color-error]/40 bg-[--color-error]/15 text-[--color-error]'
+  return 'glass text-[--color-text-secondary] opacity-50'
 }
 </script>
 
 <template>
-  <div class="review-wrapper">
+  <div class="mx-auto flex max-w-lg flex-col gap-4 px-4 py-6">
 
-    <!-- Loading overlay -->
-    <div v-if="store.isLoading" class="loading-overlay">
-      <div class="spinner" />
+    <!-- Loading skeleton -->
+    <div v-if="store.isLoading" class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <div class="flex justify-between">
+          <span class="skeleton-pulse h-4 w-24 rounded" />
+          <span class="skeleton-pulse h-4 w-20 rounded" />
+        </div>
+        <div class="skeleton-pulse h-2 rounded-full" />
+      </div>
+      <div class="skeleton-pulse flex min-h-[55vh] items-center justify-center rounded-[--radius-card]">
+        <div class="flex flex-col items-center gap-3">
+          <span class="skeleton-pulse h-4 w-20 rounded-full" />
+          <span class="skeleton-pulse h-6 w-48 rounded" />
+          <span class="skeleton-pulse h-4 w-16 rounded-full" />
+        </div>
+      </div>
+      <div class="skeleton-pulse h-12 w-full rounded-[--radius-btn]" />
     </div>
 
     <!-- Session finished (redirecting) -->
-    <div v-if="store.isFinished" class="finished-state">
+    <div v-else-if="store.isFinished" class="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center text-[--color-text-secondary]">
       <div class="spinner" />
       <p>Guardando resultados…</p>
     </div>
@@ -160,50 +168,57 @@ function optionClass(option: QuizOption): string {
     <template v-else-if="store.currentCard">
       <!-- Progress -->
       <div class="flex flex-col gap-1">
-        <div class="flex justify-between text-sm" style="color: var(--color-text-secondary)">
+        <div class="flex items-center justify-between text-sm text-[--color-text-secondary]">
           <span>Tarjeta {{ store.progress.current }} de {{ store.progress.total }}</span>
           <span class="flex items-center gap-2">
-            <span class="timer" :class="{ 'timer--warn': timer <= 10, 'timer--danger': timer <= 5 }">
-              ⏱ {{ timer }}s
+            <!-- Timer countdown ring -->
+            <span class="relative inline-flex items-center gap-1.5">
+              <svg class="h-5 w-5 -rotate-90" viewBox="0 0 20 20" aria-hidden="true">
+                <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"
+                  class="text-[--glass-border]" />
+                <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"
+                  :class="timer <= 5 ? 'text-[--color-error]' : timer <= 10 ? 'text-[--color-accent]' : 'text-[--color-primary]'"
+                  :stroke-dasharray="2 * Math.PI * 8"
+                  :stroke-dashoffset="2 * Math.PI * 8 * (1 - timer / TIMER_DURATION)"
+                  class="transition-all duration-1000 ease-linear" />
+              </svg>
+              <span class="text-xs font-semibold tabular-nums"
+                :class="timer <= 5 ? 'text-[--color-error] animate-pulse' : timer <= 10 ? 'text-[--color-accent]' : 'text-[--color-text-secondary]'">
+                {{ timer }}s
+              </span>
             </span>
             <span>{{ MODE_LABELS[mode] }}</span>
           </span>
         </div>
-        <div class="h-2 overflow-hidden rounded-full" style="background: var(--glass-border)">
-          <div
-            class="h-full rounded-full transition-all duration-300"
-            style="background: var(--color-primary)"
-            :style="{ width: `${(store.progress.current / store.progress.total) * 100}%` }"
-          />
+        <div class="h-2 overflow-hidden rounded-full bg-[--glass-border]">
+          <div class="h-full rounded-full bg-[--color-primary] transition-all duration-300"
+            :style="{ width: `${(store.progress.current / store.progress.total) * 100}%` }" />
         </div>
       </div>
 
       <!-- Self-Assessment mode -->
       <template v-if="mode === 'self-assessment'">
-        <!-- Slide transition keyed by currentIndex -->
         <Transition name="slide-card" mode="out-in">
           <div :key="store.currentIndex" class="flex flex-col gap-4">
             <!-- 3D Flip Card -->
             <div class="card-scene min-h-[55vh]">
               <div class="card-3d" :class="{ 'is-flipped': isFlipped }">
-                <!-- Front face: question -->
+                <!-- Front face -->
                 <div class="card-face card-front">
-                  <!-- Topic chip -->
                   <span class="topic-chip">
                     {{ store.currentCard.topic }}
-                    <template v-if="store.currentCard.subtopic"> · {{ store.currentCard.subtopic }}</template>
+                    <template v-if="store.currentCard.subtopic"><span aria-hidden="true"> · </span>{{ store.currentCard.subtopic }}</template>
                   </span>
                   <h2 class="card-title">{{ store.currentCard.title }}</h2>
                   <span class="difficulty-badge" :class="`difficulty-${store.currentCard.difficulty}`">
                     {{ store.currentCard.difficulty }}
                   </span>
                 </div>
-
-                <!-- Back face: answer -->
+                <!-- Back face -->
                 <div class="card-face card-back">
                   <span class="topic-chip">
                     {{ store.currentCard.topic }}
-                    <template v-if="store.currentCard.subtopic"> · {{ store.currentCard.subtopic }}</template>
+                    <template v-if="store.currentCard.subtopic"><span aria-hidden="true"> · </span>{{ store.currentCard.subtopic }}</template>
                   </span>
                   <h2 class="card-title card-title--muted">{{ store.currentCard.title }}</h2>
                   <div class="card-content-box">{{ store.currentCard.content }}</div>
@@ -218,19 +233,38 @@ function optionClass(option: QuizOption): string {
             <div class="flex flex-col gap-3">
               <button
                 v-if="!isFlipped"
-                class="flip-btn"
+                class="touch-target btn-tactile glass flex w-full items-center justify-center gap-2 rounded-[--radius-btn] px-4 py-3 text-sm font-semibold text-[--color-text-primary] disabled:opacity-50"
                 :disabled="store.isLoading"
                 @click="flipCard"
               >
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
                 Ver respuesta
               </button>
               <template v-else>
-                <div class="flex gap-3">
-                  <button class="answer-btn answer-btn--wrong" :disabled="store.isLoading" @click="handleAnswer(false)">
-                    ✗ No lo sabía
+                <div class="flex flex-col gap-3 sm:flex-row">
+                  <button
+                    class="touch-target btn-tactile flex flex-1 items-center justify-center gap-2 rounded-[--radius-btn] border px-4 py-3 text-sm font-semibold disabled:opacity-50 answer-btn--wrong"
+                    :disabled="store.isLoading"
+                    @click="handleAnswer(false)"
+                  >
+                    <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                    No lo sabía
                   </button>
-                  <button class="answer-btn answer-btn--correct" :disabled="store.isLoading" @click="handleAnswer(true)">
-                    ✓ Lo sabía
+                  <button
+                    class="touch-target btn-tactile flex flex-1 items-center justify-center gap-2 rounded-[--radius-btn] border px-4 py-3 text-sm font-semibold disabled:opacity-50 answer-btn--correct"
+                    :disabled="store.isLoading"
+                    @click="handleAnswer(true)"
+                  >
+                    <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Lo sabía
                   </button>
                 </div>
               </template>
@@ -241,19 +275,19 @@ function optionClass(option: QuizOption): string {
 
       <!-- Quiz mode -->
       <template v-else>
-        <p class="text-center text-sm" style="color: var(--color-text-secondary)">
+        <p class="text-center text-sm text-[--color-text-secondary]">
           Pregunta {{ store.progress.current }} de {{ store.progress.total }}
         </p>
 
         <Transition name="slide-card" mode="out-in">
-          <div :key="store.currentIndex" class="flex flex-col gap-3">
+          <div :key="store.currentIndex" class="flex flex-col gap-3 animate-fade-in">
             <!-- Card -->
-            <div class="quiz-card">
+            <div class="glass flex min-h-[30vh] flex-col items-center justify-center gap-4 rounded-[--radius-card] p-6 text-center">
               <span class="topic-chip">
                 {{ store.currentCard.topic }}
-                <template v-if="store.currentCard.subtopic"> · {{ store.currentCard.subtopic }}</template>
+                <template v-if="store.currentCard.subtopic"><span aria-hidden="true"> · </span>{{ store.currentCard.subtopic }}</template>
               </span>
-              <h2 class="card-title">{{ store.currentCard.title }}</h2>
+              <h2 class="card-title font-heading text-lg leading-snug tracking-tight">{{ store.currentCard.question }}</h2>
               <span class="difficulty-badge" :class="`difficulty-${store.currentCard.difficulty}`">
                 {{ store.currentCard.difficulty }}
               </span>
@@ -262,59 +296,69 @@ function optionClass(option: QuizOption): string {
             <!-- Options -->
             <div class="flex flex-col gap-3">
               <button
-                v-for="option in quizOptions"
+                v-for="(option, idx) in quizOptions"
                 :key="option.id"
-                class="quiz-option"
-                :class="optionClass(option)"
+                class="touch-target btn-tactile flex w-full items-center gap-3 rounded-[--radius-btn] border px-4 py-3 text-left text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed"
+                :class="[optionClass(option), answered ? 'scale-in' : '']"
                 :disabled="answered || store.isLoading"
                 @click="selectOption(option)"
               >
-                {{ option.title }}
+                <!-- Indicator: letter or result icon -->
+                <span v-if="answered && option.isCorrect" class="inline-flex shrink-0 items-center justify-center">
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="16 8 10 16 7 13" />
+                  </svg>
+                </span>
+                <span v-else-if="answered && option.id === selectedOptionId" class="inline-flex shrink-0 items-center justify-center">
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                  </svg>
+                </span>
+                <span v-else class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[--glass-border] bg-white/5 text-xs text-[--color-text-muted]">
+                  {{ String.fromCharCode(65 + idx) }}
+                </span>
+                <span class="flex-1">{{ option.title }}</span>
               </button>
             </div>
 
-            <!-- Explanation (shown after answering) -->
-            <div v-if="answered && currentCardContent" class="explanation-box">
-              <p class="explanation-label">Explicación</p>
-              <p class="explanation-text">{{ currentCardContent }}</p>
+            <!-- Explanation -->
+            <div v-if="answered && currentCardContent"
+              class="animate-fade-in rounded-[--radius-btn] border border-[--glass-border] p-4"
+              style="background: rgba(124, 58, 237, 0.06)"
+            >
+              <p class="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[--color-primary]">
+                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                Explicación
+              </p>
+              <p class="whitespace-pre-wrap text-sm leading-relaxed text-[--color-text-primary]">{{ currentCardContent }}</p>
             </div>
           </div>
         </Transition>
       </template>
     </template>
 
-    <!-- No cards fallback -->
-    <div v-else class="empty-fallback">
-      <p style="color: var(--color-text-secondary)">No hay tarjetas disponibles.</p>
-      <a href="/library" class="empty-link">Ir a la biblioteca</a>
+    <!-- Empty fallback -->
+    <div v-else class="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
+      <svg class="h-12 w-12 text-[--color-text-muted]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      </svg>
+      <p class="text-[--color-text-secondary]">No hay tarjetas disponibles.</p>
+      <a href="/library" class="touch-target glass rounded-[--radius-btn] px-6 py-2.5 text-sm font-semibold text-[--color-text-primary] no-underline transition-all hover:bg-white/10">Ir a la biblioteca</a>
     </div>
 
   </div>
 </template>
 
 <style scoped>
-/* ── Wrapper ────────────────────────────────────────────── */
-.review-wrapper {
-  max-width: 32rem;
-  margin: 0 auto;
-  padding: 1.5rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* ── Loading overlay ────────────────────────────────────── */
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
-}
-
+/* ── Spinner ────────────────────────────────────────────── */
 .spinner {
   width: 2.5rem;
   height: 2.5rem;
@@ -323,22 +367,24 @@ function optionClass(option: QuizOption): string {
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
-
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Finished state ─────────────────────────────────────── */
-.finished-state {
-  min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  text-align: center;
-  color: var(--color-text-secondary);
+/* ── 3D Flip Card ───────────────────────────────────────── */
+.card-scene {
+  perspective: 1000px;
+  width: 100%;
 }
-
-/* ── Card face shared ───────────────────────────────────── */
+.card-3d {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 55vh;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+}
+.card-3d.is-flipped {
+  transform: rotateY(180deg);
+}
 .card-face {
   position: absolute;
   inset: 0;
@@ -358,7 +404,6 @@ function optionClass(option: QuizOption): string {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
-
 .card-back {
   transform: rotateY(180deg);
 }
@@ -385,11 +430,9 @@ function optionClass(option: QuizOption): string {
   color: var(--color-text-primary);
   line-height: 1.3;
 }
-
 @media (min-width: 480px) {
   .card-title { font-size: 1.625rem; }
 }
-
 .card-title--muted {
   font-size: 1rem;
   color: var(--color-text-secondary);
@@ -416,220 +459,36 @@ function optionClass(option: QuizOption): string {
   font-size: 0.75rem;
   font-weight: 600;
 }
-
 .difficulty-easy   { background: rgba(16,185,129,0.15); color: var(--color-success); }
 .difficulty-medium { background: rgba(245,158,11,0.15);  color: var(--color-accent); }
 .difficulty-hard   { background: rgba(239,68,68,0.15);   color: var(--color-error); }
 
-/* ── Flip button ────────────────────────────────────────── */
-.flip-btn {
-  width: 100%;
-  padding: 0.875rem;
-  border-radius: var(--radius-btn);
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  color: var(--color-text-primary);
-  font-size: 1rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.flip-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.12);
-  transform: translateY(-1px);
-}
-
-.flip-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* ── Answer buttons ─────────────────────────────────────── */
-.answer-btn {
-  flex: 1;
-  padding: 0.875rem;
-  border-radius: var(--radius-btn);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-}
-
-.answer-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
+/* ── Answer buttons (self-assessment) ───────────────────── */
 .answer-btn--wrong {
   background: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.3);
   color: var(--color-error);
 }
-
 .answer-btn--wrong:hover:not(:disabled) {
   background: rgba(239, 68, 68, 0.18);
 }
-
 .answer-btn--correct {
   background: rgba(16, 185, 129, 0.1);
   border-color: rgba(16, 185, 129, 0.3);
   color: var(--color-success);
 }
-
 .answer-btn--correct:hover:not(:disabled) {
   background: rgba(16, 185, 129, 0.18);
 }
 
-/* ── Quiz card ──────────────────────────────────────────── */
-.quiz-card {
-  min-height: 30vh;
-  border-radius: var(--radius-card);
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-shadow);
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  text-align: center;
+/* ── Scale-in feedback animation ────────────────────────── */
+.scale-in {
+  animation: scaleFeedback 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-/* ── Quiz options ───────────────────────────────────────── */
-.quiz-option {
-  width: 100%;
-  padding: 0.875rem 1rem;
-  border-radius: var(--radius-btn);
-  border: 1px solid var(--glass-border);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.15s ease;
-}
-
-.quiz-option:disabled { cursor: not-allowed; }
-
-.quiz-option--default {
-  background: var(--glass-bg);
-  color: var(--color-text-primary);
-}
-
-.quiz-option--default:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.quiz-option--correct {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.4);
-  color: var(--color-success);
-}
-
-.quiz-option--wrong {
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: var(--color-error);
-}
-
-.quiz-option--muted {
-  background: var(--glass-bg);
-  color: var(--color-text-secondary);
-  opacity: 0.5;
-}
-
-/* ── Empty fallback ─────────────────────────────────────── */
-.empty-fallback {
-  min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  text-align: center;
-}
-
-.empty-link {
-  padding: 0.625rem 1.5rem;
-  border-radius: var(--radius-btn);
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  color: var(--color-text-primary);
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.empty-link:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-/* ── 3D Flip Card ───────────────────────────────────────── */
-.card-scene {
-  perspective: 1000px;
-  width: 100%;
-}
-
-.card-3d {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 55vh;
-  transform-style: preserve-3d;
-  transition: transform 0.5s ease;
-}
-
-.card-3d.is-flipped {
-  transform: rotateY(180deg);
-}
-
-/* ── Timer ───────────────────────────────────────────────── */
-.timer {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  padding: 0.125rem 0.5rem;
-  border-radius: 4px;
-  background: var(--glass-bg);
-  color: var(--color-text-secondary);
-  transition: color 0.3s, background 0.3s;
-}
-.timer--warn {
-  color: var(--color-accent);
-  background: rgba(245,158,11,0.12);
-}
-.timer--danger {
-  color: var(--color-error);
-  background: rgba(239,68,68,0.12);
-  animation: pulse 0.5s ease-in-out infinite alternate;
-}
-@keyframes pulse {
-  from { transform: scale(1); }
-  to { transform: scale(1.1); }
-}
-
-/* ── Explanation box ─────────────────────────────────────── */
-.explanation-box {
-  padding: 1rem;
-  border-radius: var(--radius-btn);
-  border: 1px solid var(--glass-border);
-  background: rgba(124,58,237,0.06);
-}
-.explanation-label {
-  margin: 0 0 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-primary);
-}
-.explanation-text {
-  margin: 0;
-  font-size: 0.875rem;
-  line-height: 1.6;
-  color: var(--color-text-primary);
-  white-space: pre-wrap;
+@keyframes scaleFeedback {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
 }
 
 /* ── Slide transition ───────────────────────────────────── */
@@ -637,12 +496,10 @@ function optionClass(option: QuizOption): string {
 .slide-card-leave-active {
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
-
 .slide-card-enter-from {
   transform: translateX(60px);
   opacity: 0;
 }
-
 .slide-card-leave-to {
   transform: translateX(-60px);
   opacity: 0;
