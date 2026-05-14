@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, watch, onUnmounted } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import { useReviewStore } from '../../stores/review'
 import { useReviewSession } from '../../composables/useReviewSession'
 import { generateQuizOptions } from '../../lib/quiz'
@@ -45,7 +45,7 @@ async function handleAnswer(correct: boolean) {
   }
 }
 
-// --- Timer ---
+// --- Quiz timer ---
 const TIMER_DURATION = 30
 const timer = ref(TIMER_DURATION)
 const timerInterval = ref<ReturnType<typeof setInterval> | null>(null)
@@ -57,7 +57,10 @@ function startTimer() {
     timer.value--
     if (timer.value <= 0) {
       stopTimer()
-      handleTimerExpiry()
+      if (!answered.value && quizOptions.value.length > 0) {
+        const correct = quizOptions.value.find(o => o.isCorrect)
+        if (correct) selectOption(correct)
+      }
     }
   }, 1000)
 }
@@ -68,24 +71,6 @@ function stopTimer() {
     timerInterval.value = null
   }
 }
-
-function handleTimerExpiry() {
-  if (mode === 'self-assessment') {
-    if (!isFlipped.value) {
-      flipCard()
-      setTimeout(() => handleAnswer(false), 300)
-    }
-  } else if (mode === 'quiz') {
-    if (!answered.value && quizOptions.value.length > 0) {
-      const correct = quizOptions.value.find(o => o.isCorrect)
-      if (correct) {
-        selectOption(correct)
-      }
-    }
-  }
-}
-
-onUnmounted(() => stopTimer())
 
 // --- Quiz mode state ---
 const quizOptions = ref<QuizOption[]>([])
@@ -102,7 +87,7 @@ watch(
     if (card) {
       quizOptions.value = generateQuizOptions(card)
       currentCardContent.value = card.content
-      startTimer()
+      if (mode === 'quiz') startTimer()
     } else {
       quizOptions.value = []
       stopTimer()
@@ -201,7 +186,7 @@ function optionClass(option: QuizOption): string {
         <Transition name="slide-card" mode="out-in">
           <div :key="store.currentIndex" class="flex flex-col gap-4">
             <!-- 3D Flip Card -->
-            <div class="card-scene min-h-[55vh]">
+            <div class="card-scene min-h-[55vh] cursor-pointer" @click="!isFlipped && flipCard()">
               <div class="card-3d" :class="{ 'is-flipped': isFlipped }">
                 <!-- Front face -->
                 <div class="card-face card-front">
@@ -291,6 +276,17 @@ function optionClass(option: QuizOption): string {
               <span class="difficulty-badge" :class="`difficulty-${store.currentCard.difficulty}`">
                 {{ store.currentCard.difficulty }}
               </span>
+            </div>
+
+            <!-- Contexto educativo (visible antes de responder) -->
+            <div v-if="!answered && currentCardContent"
+              class="rounded-[--radius-btn] border border-(--glass-border) bg-(--glass-bg)/50 p-3 text-xs leading-relaxed text-(--color-text-secondary)"
+            >
+              <p class="mb-1 flex items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-wide text-(--color-primary)">
+                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Contexto
+              </p>
+              <p class="m-0 whitespace-pre-wrap">{{ currentCardContent.slice(0, 200) }}{{ currentCardContent.length > 200 ? '...' : '' }}</p>
             </div>
 
             <!-- Options -->
