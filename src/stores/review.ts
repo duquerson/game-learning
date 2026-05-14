@@ -31,13 +31,13 @@ export const useReviewStore = defineStore('review', () => {
     currentIndex.value = 0
     mode.value = reviewMode
     sessionResults.value = []
-    sessionId.value = crypto.randomUUID()
+    sessionId.value = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); })
     correctStreak.value = 0
     sessionPoints.value = 0
     sessionCompleteResult.value = null
   }
 
-  async function submitAnswer(cardId: string, correct: boolean, difficulty: Difficulty): Promise<boolean> {
+  async function submitAnswer(cardId: string, correct: boolean, difficulty: Difficulty, confidence?: number): Promise<boolean> {
     const previousStreak = correctStreak.value
     const previousPoints = sessionPoints.value
 
@@ -50,19 +50,28 @@ export const useReviewStore = defineStore('review', () => {
       correctStreak.value = 0
     }
 
-    sessionResults.value.push({
+    // Check if we already have a result for this card (to allow re-evaluating if needed, though usually cards move forward)
+    const existingIndex = sessionResults.value.findIndex(r => r.cardId === cardId)
+    const result: SessionResult = {
       cardId,
       correct,
       difficulty,
       pointsEarned: estimatedPoints,
-    })
+      confidence
+    }
+
+    if (existingIndex >= 0) {
+      sessionResults.value[existingIndex] = result
+    } else {
+      sessionResults.value.push(result)
+    }
 
     isLoading.value = true
     try {
       const { data, error } = await actions.review.submitAnswer({
         cardId,
         correct,
-        sessionId: sessionId.value ?? crypto.randomUUID(),
+        sessionId: sessionId.value || 'fallback-session',
       })
 
       if (error || !data || !data.success) {
@@ -75,8 +84,11 @@ export const useReviewStore = defineStore('review', () => {
       correctStreak.value = newStreak
       sessionPoints.value = previousPoints + pointsEarned + streakBonus
       
-      // Update the last result with accurate points
-      sessionResults.value[sessionResults.value.length - 1].pointsEarned = pointsEarned + streakBonus
+      // Update the result with accurate points
+      const finalIndex = sessionResults.value.findIndex(r => r.cardId === cardId)
+      if (finalIndex >= 0) {
+        sessionResults.value[finalIndex].pointsEarned = pointsEarned + streakBonus
+      }
 
       if (correct) {
         toast.success(`¡+${pointsEarned} puntos!`)
@@ -89,7 +101,7 @@ export const useReviewStore = defineStore('review', () => {
       // Rollback
       correctStreak.value = previousStreak
       sessionPoints.value = previousPoints
-      sessionResults.value.pop()
+      if (existingIndex < 0) sessionResults.value.pop()
 
       toast.error(GENERIC_USER_ERROR_MESSAGE)
       return false
@@ -98,13 +110,22 @@ export const useReviewStore = defineStore('review', () => {
     }
   }
 
+  function prevCard() {
+    if (currentIndex.value > 0) {
+      currentIndex.value--
+    }
+  }
+
   async function nextCard(): Promise<{ done: boolean; success: boolean }> {
-    currentIndex.value++
-    if (currentIndex.value >= deck.value.length) {
+    if (currentIndex.value < deck.value.length - 1) {
+      currentIndex.value++
+      return { done: false, success: true }
+    } else {
+      // Intentar finalizar solo si estamos en la última y avanzamos
+      currentIndex.value++
       const success = await completeSession()
       return { done: true, success }
     }
-    return { done: false, success: true }
   }
 
   async function completeSession(): Promise<boolean> {
@@ -116,7 +137,12 @@ export const useReviewStore = defineStore('review', () => {
     try {
       const { data, error } = await actions.review.completeSession({
         sessionId: sessionId.value,
-        sessionResults: sessionResults.value,
+        sessionResults: sessionResults.value.map(r => ({
+          cardId: r.cardId,
+          correct: r.correct,
+          difficulty: r.difficulty,
+          pointsEarned: r.pointsEarned
+        })),
       })
 
       if (error || !data || !data.success) {
@@ -130,7 +156,6 @@ export const useReviewStore = defineStore('review', () => {
         toast.success(`🏆 ¡Nueva insignia! ${badge.icon} ${badge.name}`)
       }
 
-      // La navegación a /results es responsabilidad del componente que llama a completeSession.
       return true
     } catch {
       toast.error(GENERIC_USER_ERROR_MESSAGE)
@@ -155,6 +180,7 @@ export const useReviewStore = defineStore('review', () => {
     isFinished,
     initSession,
     submitAnswer,
+    prevCard,
     nextCard,
     completeSession,
   }

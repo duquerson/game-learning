@@ -3,14 +3,43 @@ export type ReviewMode = 'self-assessment' | 'quiz'
 export type BadgeLevel = 'basic' | 'intermediate' | 'advanced'
 export type BadgeCategory = 'achievement' | 'streak' | 'mastery'
 
-export interface Card {
+export type BadgeCondition =
+  | { type: 'first_correct' }
+  | { type: 'correct_streak'; threshold: number }
+  | { type: 'total_reviewed'; threshold: number }
+  | { type: 'daily_streak'; threshold: number }
+  | { type: 'topic_mastery'; topic: string }
+  | { type: 'total_correct'; threshold: number }
+  | { type: 'perfect_session'; min_cards: number }
+  | { type: 'all_cards_mastery' }
+
+export interface Flashcard {
   id: string
+  category: string
+  topic: string
+  difficulty: Difficulty
+  front: {
+    question: string
+    hint?: string
+    codePreview?: string
+  }
+  back: {
+    answer: string
+    explanation?: string
+    example?: string
+    code?: string
+    trueFalse?: boolean
+  }
+  spacedRepetition?: {
+    confidence?: number
+    reviewCount?: number
+    nextReviewAt?: string
+  }
+}
+
+export interface Card extends Flashcard {
   title: string
   content: string
-  topic: string
-  subtopic: string
-  difficulty: Difficulty
-  points: number
   question: string
   options: CardOption[]
   correctAnswer: string
@@ -28,7 +57,7 @@ export interface Badge {
   icon: string
   level: BadgeLevel
   category?: BadgeCategory
-  condition: import('./database').BadgeConditionJson
+  condition: BadgeCondition
 }
 
 export interface UserBadge {
@@ -53,6 +82,7 @@ export interface SessionResult {
   correct: boolean
   difficulty: Difficulty
   pointsEarned: number
+  confidence?: number // 0: No, 1: Doubt, 2: Easy
 }
 
 export interface QuizOption {
