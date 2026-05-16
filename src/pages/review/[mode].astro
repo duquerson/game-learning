@@ -1,8 +1,10 @@
 ---
 import AppLayout from '../../layouts/AppLayout.astro'
 import ReviewCard from '../../components/cards/ReviewCard.vue'
+import { CreateSessionUseCase } from '../../use-cases/create-session'
+import { SupabaseCardRepository } from '../../adapters/supabase/card-repository'
+import type { Card, ReviewMode } from '../../types/app'
 import { createSupabaseClient } from '../../lib/supabase'
-import type { ReviewMode } from '../../types/app'
 
 const { mode } = Astro.params
 
@@ -15,64 +17,21 @@ const supabase = createSupabaseClient(Astro.request, Astro.cookies)
 const { data: { user } } = await supabase.auth.getUser()
 if (!user) return Astro.redirect('/login')
 
-// Middleware guarantees session exists, but get user_id for queries
-const userId = user.id
+const repo = new SupabaseCardRepository(Astro.request, Astro.cookies)
+const useCase = new CreateSessionUseCase(repo)
 
-// Get user's selected topics
-const { data: prefs } = await supabase
-  .from('user_preferences')
-  .select('selected_topics')
-  .eq('user_id', userId)
-  .single()
+const domain = Astro.url.searchParams.get('domain') || undefined
+const cards = await useCase.execute(user.id, domain)
 
-const topics: string[] = prefs?.selected_topics ?? []
-
-// Query cards filtered by topics (or all cards if no topics)
-let query = supabase.from('cards').select('*')
-if (topics.length > 0) {
-  query = query.in('topic', topics)
+if (cards.length === 0) {
+  return Astro.redirect('/library?empty=true')
 }
-const { data: rawCards } = await query
-
-// If no cards found, redirect to library
-if (!rawCards || rawCards.length === 0) {
-  return Astro.redirect('/library')
-}
-
-// Shuffle and limit to 10 cards
-const shuffled = [...rawCards].sort(() => Math.random() - 0.5)
-const selectedCards = shuffled.slice(0, 10)
-
-// Map DB rows to Card type
-const cards = selectedCards.map((c) => {
-  const row = c as any
-  const rawOptions = row.options
-  const parsedOptions = Array.isArray(rawOptions) && rawOptions.length === 4
-    ? rawOptions.map((o: any) => ({ id: String(o.id || 'A'), text: String(o.text || '') }))
-    : [
-        { id: 'A', text: row.title },
-        { id: 'B', text: `Variacion de ${row.title}` },
-        { id: 'C', text: 'Otro concepto' },
-        { id: 'D', text: 'Ninguna de las anteriores' },
-      ] satisfies import('../../types/app').CardOption[]
-
-  return {
-    id: row.id,
-    title: row.title,
-    content: row.content,
-    topic: row.topic,
-    subtopic: row.subtopic ?? '',
-    difficulty: row.difficulty,
-    points: row.points_value ?? row.points ?? 10,
-    question: row.question || row.title,
-    options: parsedOptions,
-    correctAnswer: row.correct_answer || 'A',
-  }
-})
 
 const reviewMode = mode as ReviewMode
 ---
 
-<AppLayout title={reviewMode === 'self-assessment' ? 'Autoevaluación' : 'Quiz'}>
-  <ReviewCard client:load cards={cards} mode={reviewMode} />
+<AppLayout title={reviewMode === 'self-assessment' ? 'Autoevaluación' : 'Quiz'} noScroll={reviewMode === 'quiz'}>
+  <ReviewCard client:only="vue" cards={cards} mode={reviewMode} />
 </AppLayout>
+
+

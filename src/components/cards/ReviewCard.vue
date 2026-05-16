@@ -51,9 +51,11 @@ const handleConfidence = async (confidence: number) => {
 const mappedQuestions = computed(() => {
   return props.cards.map(card => ({
     id: card.id,
-    text: card.title, // UX spec: Title is the question
+    text: card.question,
+    title: card.title,
     difficulty: card.difficulty,
-    explanation: card.content,
+    explanation: `Este concepto de **${card.topic}** es fundamental para resolver problemas de ${card.subtopic.toLowerCase()}. Dominar esto mejora la calidad del código y el rendimiento.`,
+    content: card.content,
     options: card.options.map(opt => ({
       id: opt.id,
       label: opt.id as 'A' | 'B' | 'C' | 'D',
@@ -176,7 +178,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
             <div class="card-3d">
               <!-- Front Face -->
               <div class="card-face card-front glass">
-                <div class="flex h-full flex-col p-8">
+                <div class="flex h-full flex-col overflow-y-auto p-6 sm:p-8">
                   <div class="flex-1 flex flex-col justify-center text-center">
                     <h2 class="text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
                       <MarkdownRenderer :content="currentFlashcard.front.question" />
@@ -185,7 +187,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                       💡 Pista: {{ currentFlashcard.front.hint }}
                     </p>
                   </div>
-                  <div class="mt-auto text-center">
+                  <div class="mt-auto pt-6 text-center shrink-0">
                     <span class="text-[10px] font-bold uppercase tracking-widest text-[--color-text-muted] animate-pulse">
                       Tap para voltear
                     </span>
@@ -196,7 +198,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
               <!-- Back Face -->
               <div class="card-face card-back glass">
                 <div class="flex h-full flex-col overflow-y-auto p-6 sm:p-8">
-                  <div class="mb-6 border-b border-[--glass-border] pb-4 text-center">
+                  <div class="mb-6 border-b border-[--glass-border] pb-4 text-center shrink-0">
                     <span class="text-[10px] font-bold uppercase tracking-widest text-[--color-accent]">Respuesta</span>
                     <h3 class="mt-1 text-xl font-bold text-[--color-primary]">
                       <MarkdownRenderer :content="currentFlashcard.back.answer" inline />
@@ -205,7 +207,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                   <div class="flex-1 space-y-4 text-sm leading-relaxed text-[--color-text-secondary]">
                     <MarkdownRenderer :content="currentFlashcard.back.explanation || ''" />
                   </div>
-                  <div class="mt-6 flex items-center justify-between pt-4 border-t border-[--glass-border]">
+                  <div class="mt-6 flex items-center justify-between pt-4 border-t border-[--glass-border] shrink-0">
                     <span class="difficulty-badge" :class="`difficulty-${currentFlashcard.difficulty}`">
                       {{ currentFlashcard.difficulty }}
                     </span>
@@ -273,7 +275,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
   height: 100%;
   backface-visibility: hidden;
   border-radius: var(--radius-card);
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--glass-border);
