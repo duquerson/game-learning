@@ -1,31 +1,38 @@
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import type { LessonProgress, UserProgress } from '@/types/app'
 import { createSessionProgressStore } from '@/features/progress/adapters/session-progress-store'
 import type { ProgressStore } from '@/features/progress/domain/progress-store'
 import { createEmptyProgress, markRead, recordQuizAttempt } from '@/features/progress/domain/progress-tracker'
 
-let sharedProgress = ref<UserProgress>(createEmptyProgress())
+const sharedProgress = ref<UserProgress>(createEmptyProgress())
 let store: ProgressStore | null = null
-
-function ensureStore(): ProgressStore | null {
-  if (typeof window === 'undefined') return null
-  if (!store) {
-    store = createSessionProgressStore()
-    if (store) sharedProgress.value = store.load()
-  }
-  return store
-}
+let storeLoaded = false
 
 /**
  * Composable compartido de progreso efímero (session storage).
  * Estado efímero: se pierde al recargar la pestaña (design.md).
+ *
+ * Hidratación SSR-safe: las lecturas devuelven estado vacío hasta que
+ * `ready` se activa en onMounted de cada instancia. Así el primer render
+ * del cliente coincide con el HTML del servidor aunque otra isla Vue
+ * (p. ej. LessonView) haya mutado el estado compartido primero.
  */
 export function useLessonProgress() {
-  const s = ensureStore()
+  const ready = ref(false)
 
-  const progress = computed(() => sharedProgress.value)
+  onMounted(() => {
+    if (!store) store = createSessionProgressStore()
+    if (store && !storeLoaded) {
+      sharedProgress.value = store.load()
+      storeLoaded = true
+    }
+    ready.value = true
+  })
+
+  const progress = computed(() => (ready.value ? sharedProgress.value : null))
 
   function stateOf(lessonId: string): LessonProgress | undefined {
+    if (!ready.value) return undefined
     return sharedProgress.value.lessons[lessonId]
   }
 
@@ -39,12 +46,12 @@ export function useLessonProgress() {
 
   function registerRead(lessonId: string): void {
     sharedProgress.value = markRead(sharedProgress.value, lessonId)
-    s?.save(sharedProgress.value)
+    store?.save(sharedProgress.value)
   }
 
   function registerQuizResult(lessonId: string, correctCount: number): void {
     sharedProgress.value = recordQuizAttempt(sharedProgress.value, lessonId, correctCount)
-    s?.save(sharedProgress.value)
+    store?.save(sharedProgress.value)
   }
 
   return { progress, stateOf, isRead, isMastered, registerRead, registerQuizResult }

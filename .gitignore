@@ -42,6 +42,7 @@ playwright-report/
 test-results/
 test-results.json
 *.test-results.json
+.vitest/
 
 # Package lock files (pnpm is primary)
 package-lock.json
