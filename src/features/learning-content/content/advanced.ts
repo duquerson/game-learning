@@ -174,7 +174,7 @@ export const advancedLessons: Lesson[] = [
       '- **Importar**: `import { x } from "./archivo.js"` o `import fn from "./archivo.js"` (default).',
       '',
       'Características clave:',
-      '- Cada módulo tiene su propio scope: no hay variables globares accidentales.',
+      '- Cada módulo tiene su propio scope: no hay variables globales accidentales.',
       '- `export default` permite importar sin desestructurar.',
       '- Los módulos se cargan una sola vez (singleton).',
       '- El scope de módulo es estricto: no se permite usar variables no declaradas.',
