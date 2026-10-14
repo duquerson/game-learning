@@ -9,7 +9,7 @@ export const prerender = true
 
 <BaseLayout title="Mapa de aprendizaje">
   <header class="site-header">
-    <a href="/" class="brand">game-learning</a>
+    <a href="/" class="brand" translate="no">game-learning</a>
     <ThemeToggle client:load />
   </header>
 
@@ -43,6 +43,9 @@ export const prerender = true
   font-size: 1.125rem;
   color: var(--color-primary);
   text-decoration: none;
+}
+.brand:hover {
+  text-decoration: underline;
 }
 .layout {
   max-width: 64rem;

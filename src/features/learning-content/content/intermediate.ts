@@ -16,7 +16,7 @@ export const intermediateLessons: Lesson[] = [
       '',
       '**Scope léxico**: una función ve las variables de sus scopes externos, no al revés. Las variables declaradas con `let/const` viven en el bloque donde se crean.',
       '',
-      'Las **closures** se basan en este comportamiento: una función "recuerda" el entorno donde fue creada.',
+      'Las **closures** se basan en este comportamiento: una función “recuerda” el entorno donde fue creada.',
     ].join('\n'),
     examples: [
       'function sumar(a, b) {\n  return a + b\n}\nconsole.log(sumar(2, 3)) // 5',
@@ -62,7 +62,7 @@ export const intermediateLessons: Lesson[] = [
         prompt: '¿Qué imprime console.log(fn())?\nfunction externa() {\n  const secreto = 42\n  return () => secreto\n}',
         options: ['undefined', 'Error: secreto no definido', '42', 'null'],
         correctOptionId: 'C',
-        explanation: 'La arrow function retornada es una closure: "recuerda" secreto del scope de externa y lo devuelve.',
+        explanation: 'La arrow function retornada es una closure: “recuerda” secreto del scope de externa y lo devuelve.',
       },
       {
         id: 'fun-q5',
@@ -73,7 +73,7 @@ export const intermediateLessons: Lesson[] = [
       },
     ],
     practices: [
-      'Crea una función "crearContador" que retorne otra función que incremente y devuelva un número privado. Prueba dos contadores independientes.',
+      'Crea una función `crearContador` que retorne otra función que incremente y devuelva un número privado. Prueba dos contadores independientes.',
       'Compara: const f = () => ({}) vs const f = () => {}. ¿Por qué la primera retorna un objeto y la segunda no?',
     ],
   },
@@ -161,7 +161,7 @@ export const intermediateLessons: Lesson[] = [
       '- **Spread** (`...`) copia propiedades: `const copia = { ...original, activo: true }`.',
       '- **Rest** (`...`) en destructuring recoge el resto: `const { primero, ...resto } = obj`.',
       '',
-      'Optional chaining: `obj?.prop` evita el error "cannot read properties of undefined" cuando la propiedad puede no existir.',
+      'Optional chaining: `obj?.prop` evita el error “cannot read properties of undefined” cuando la propiedad puede no existir.',
     ].join('\n'),
     examples: [
       "const persona = { nombre: 'Ada', edad: 36 }\nconsole.log(persona.nombre)      // \"Ada\"\nconsole.log(persona['nombre'])   // \"Ada\"",

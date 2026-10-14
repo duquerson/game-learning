@@ -192,8 +192,10 @@ const isCorrectSelection = computed(
   color: var(--color-muted);
 }
 .option-text {
+  min-width: 0;
   font-size: var(--text-body);
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 .feedback {
   margin-top: 1rem;
@@ -246,6 +248,10 @@ const isCorrectSelection = computed(
   background: transparent;
   border-color: var(--color-border);
   color: var(--color-foreground);
+}
+.btn.secondary:hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
 }
 .score {
   font-size: var(--text-h3);

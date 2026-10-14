@@ -64,7 +64,7 @@ export const advancedLessons: Lesson[] = [
       },
       {
         id: 'clo-q5',
-        prompt: 'Si una closure captura una variable de un bucle con var, ¿cuántas "instancias" de esa variable existen?',
+        prompt: 'Si una closure captura una variable de un bucle con var, ¿cuántas “instancias” de esa variable existen?',
         options: ['Una por iteración', 'Solo una compartida por todas las iteraciones', 'Ninguna', 'Dos'],
         correctOptionId: 'B',
         explanation: 'var no crea un binding nuevo por iteración: todas las closures comparten la misma variable.',

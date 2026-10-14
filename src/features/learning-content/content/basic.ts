@@ -34,7 +34,7 @@ export const basicLessons: Lesson[] = [
         prompt: '¿Qué imprime console.log(typeof 42)?',
         options: ['"int"', '"number"', '"double"', '"integer"'],
         correctOptionId: 'B',
-        explanation: 'JavaScript no distingue enteros de decimales: ambos son de tipo "number".',
+        explanation: 'JavaScript no distingue enteros de decimales: ambos son de tipo “number”.',
       },
       {
         id: 'var-q3',
@@ -86,7 +86,7 @@ export const basicLessons: Lesson[] = [
       '- `==` compara con conversión de tipos: `0 == ""` es true. Evítala.',
       '- Operadores lógicos: `&&` (y), `||` (o), `!` (no).',
       '',
-      'Valores "falsy": false, 0, "", null, undefined, NaN. Todo lo demás es "truthy".',
+      'Valores “falsy”: false, 0, "", null, undefined, NaN. Todo lo demás es “truthy”.',
     ].join('\n'),
     examples: [
       "const edad = 20\nif (edad >= 18) {\n  console.log('Mayor de edad')\n} else {\n  console.log('Menor de edad')\n}",
@@ -112,11 +112,11 @@ export const basicLessons: Lesson[] = [
         prompt: '¿Qué rama ejecuta: if (0) { "sí" } else { "no" }?',
         options: ['sí', 'no', 'Error', 'undefined'],
         correctOptionId: 'B',
-        explanation: 'El número 0 es "falsy": la condición se evalúa como falsa y se ejecuta el else.',
+        explanation: 'El número 0 es “falsy”: la condición se evalúa como falsa y se ejecuta el else.',
       },
       {
         id: 'cond-q3',
-        prompt: '¿Cuál de estos NO es un valor "falsy"?',
+        prompt: '¿Cuál de estos NO es un valor “falsy”?',
         options: ['"" (cadena vacía)', '[] (arreglo vacío)', 'null', 'NaN'],
         correctOptionId: 'B',
         explanation: 'Un arreglo vacío [] es truthy aunque esté vacío.',

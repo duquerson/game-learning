@@ -35,7 +35,10 @@ function stateClass(lessonId: string): string {
     <div class="map-summary" role="status">
       <span class="summary-count">{{ masteredCount }}/{{ totalLessons }} dominadas</span>
       <div class="summary-bar" aria-hidden="true">
-        <div class="summary-fill" :style="{ width: `${(masteredCount / totalLessons) * 100}%` }"></div>
+        <div
+          class="summary-fill"
+          :style="{ transform: `scaleX(${masteredCount / totalLessons})` }"
+        ></div>
       </div>
     </div>
 
@@ -88,9 +91,11 @@ function stateClass(lessonId: string): string {
 }
 .summary-fill {
   height: 100%;
+  width: 100%;
   background: var(--color-progress);
   border-radius: 99px;
-  transition: width 0.3s ease;
+  transform-origin: left center;
+  transition: transform 0.3s ease;
 }
 .level-title {
   font-size: var(--text-h3);
@@ -146,7 +151,9 @@ function stateClass(lessonId: string): string {
 }
 .lesson-title {
   flex: 1;
+  min-width: 0;
   font-size: var(--text-sm);
+  overflow-wrap: anywhere;
 }
 .lesson-state {
   font-size: var(--text-xs);
