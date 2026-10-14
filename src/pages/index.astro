@@ -1,12 +1,75 @@
 ---
-import { createSupabaseClient } from '../lib/supabase'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import ThemeToggle from '../components/ui/ThemeToggle.vue'
+import CourseMap from '../features/learning-experience/components/CourseMap.vue'
+import { lessons } from '../features/learning-content/content'
 
-const supabase = createSupabaseClient(Astro.request, Astro.cookies)
-const { data: { user } } = await supabase.auth.getUser()
-
-if (user) {
-  return Astro.redirect('/dashboard')
-} else {
-  return Astro.redirect('/login')
-}
+export const prerender = true
 ---
+
+<BaseLayout title="Mapa de aprendizaje">
+  <header class="site-header">
+    <a href="/" class="brand">game-learning</a>
+    <ThemeToggle client:load />
+  </header>
+
+  <main id="main-content" class="layout">
+    <div class="intro prose-measure">
+      <h1>Aprende JavaScript desde cero</h1>
+      <p class="tagline">
+        Un cuaderno de exploración técnica con {lessons.length} lecciones prácticas.
+        Elige una lección en el mapa y avanza a tu ritmo.
+      </p>
+      <p class="preview-note">
+        Vista previa sin cuentas: tu progreso se guarda solo durante esta sesión y se reinicia al recargar.
+      </p>
+    </div>
+
+    <CourseMap client:load />
+  </main>
+</BaseLayout>
+
+<style>
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.brand {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+.layout {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+.intro {
+  margin-bottom: 2.5rem;
+}
+.intro h1 {
+  font-size: var(--text-hero);
+  margin: 0 0 0.5rem;
+  line-height: 1.1;
+}
+.tagline {
+  font-size: var(--text-h3);
+  color: var(--color-muted);
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+.preview-note {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--color-attention);
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+</style>

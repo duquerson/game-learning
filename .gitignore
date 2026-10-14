@@ -54,3 +54,8 @@ supabase/.temp/
 
 # Generated files
 nul
+# Build artifacts
+.netlify/
+dist/
+.astro/
+

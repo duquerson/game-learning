@@ -8,14 +8,15 @@ onMounted(init)
 
 <template>
   <button
-    class="btn-tactile touch-target flex items-center justify-center rounded-(--radius-btn) border border-(--glass-border) bg-(--glass-bg) p-2.5 text-(--color-text-secondary) transition-all hover:scale-110"
-    @click="toggle"
+    class="touch-target theme-toggle"
+    type="button"
     :aria-label="`Cambiar a tema ${theme === 'light' ? 'oscuro' : 'claro'}`"
+    @click="toggle"
   >
-    <svg v-if="theme === 'light'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <svg v-if="theme === 'light'" aria-hidden="true" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
     </svg>
-    <svg v-else class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <svg v-else aria-hidden="true" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <circle cx="12" cy="12" r="5"/>
       <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
       <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
@@ -24,3 +25,25 @@ onMounted(init)
     </svg>
   </button>
 </template>
+
+<style scoped>
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.theme-toggle:hover {
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+}
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+</style>

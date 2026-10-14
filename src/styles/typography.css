@@ -1,9 +1,9 @@
-/* Fonts loaded via Google Fonts @import in global.css */
-:root {
-  --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
+/* Tipografía — code exclusivamente en JetBrains Mono (design.md) */
+code, kbd, pre, samp {
+  font-family: var(--font-mono);
 }
 
-code, kbd, pre, samp, .font-mono,
-[class*="tabular-nums"] {
-  font-family: var(--font-family-mono);
+/* Línea de lectura ideal: 55–75 caracteres */
+.prose-measure {
+  max-width: 68ch;
 }

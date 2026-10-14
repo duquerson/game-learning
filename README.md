@@ -1,53 +1,38 @@
-# MicroLearn 🧠
+# game-learning 📚
 
-Plataforma de microaprendizaje gamificada para desarrolladores. Aprende JavaScript y TypeScript mediante flashcards en modo quiz, gana puntos, mantiene rachas diarias y desbloquea insignias.
+Plataforma de aprendizaje de JavaScript para principiantes. Un cuaderno de exploración técnica con 9 lecciones prácticas, navegación por niveles y evaluación formativa.
 
 ## Stack
 
 | Capa | Tecnología |
 |---|---|
-| Framework | Astro 5 (islands architecture, SSR) |
+| Framework | Astro 6 (islands architecture, output estático) |
 | Componentes | Vue 3 + Composition API |
-| Estado | Pinia |
-| Estilos | TailwindCSS v4 + Glassmorphism |
-| Backend/DB/Auth | Supabase |
-| Deploy | Vercel |
+| Estilos | TailwindCSS v4 + CSS custom properties |
+| Tests | Vitest (unit) + Playwright (E2E) |
 
 ## Features
 
-- 🔐 Auth: registro, login, OAuth (Google/GitHub), recuperación de contraseña
-- 🎯 Onboarding: selección de temas y dificultad al primer ingreso
-- 📚 Biblioteca: tarjetas agrupadas por tema/subtema con filtros y búsqueda
-- 🧪 Modo quiz: 10 tarjetas, 4 opciones, timer de 30s, feedback inmediato
-- ⭐ Puntos: easy=5, medium=10, hard=15, bonos por racha (3→+5, 5→+15)
-- 🔥 Rachas diarias: estudio consistente con pérdida por inactividad
-- 🏆 Insignias: 9 logros clasificados por nivel y categoría
-- 📊 Dashboard: progreso, stats, insignias, acceso rápido
-- 🌓 Tema claro/oscuro con persistencia cross-session
+- 📖 Navegación por 3 niveles (Básico, Intermedio, Avanzado)
+- 📚 9 lecciones con explicación, ejemplos y quiz formativo
+- ✅ Quiz de 5 preguntas × 4 opciones, feedback inmediato
+- 🎯 Evaluación formativa: 4/5 correctas + lectura = dominado
+- 🔄 Progreso efímero (session storage, se pierde al recargar)
+- 🌓 Tema claro/oscuro con paleta topográfica
 - 📱 Mobile-first responsive
+- ♿ Accesible (skip link, keyboard nav, ARIA, prefers-reduced-motion)
 
 ## Requisitos
 
 - Node.js 20+
 - pnpm 9
-- Supabase account (o local)
 
 ## Setup
 
 ```bash
 git clone <repo>
-cd microlearn-astro-vue
+cd game-learning
 pnpm install
-```
-
-Crear `.env`:
-
-```
-PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
-PUBLIC_SUPABASE_ANON_KEY=tu-anon-key
-```
-
-```bash
 pnpm dev
 ```
 
@@ -56,25 +41,50 @@ pnpm dev
 | Comando | Descripción |
 |---|---|
 | `pnpm dev` | Servidor de desarrollo |
-| `pnpm build` | Build producción |
-| `pnpm preview` | Preview build |
+| `pnpm build` | Build estático (12 páginas) |
+| `pnpm preview` | Preview del build |
 | `pnpm test` | Tests unitarios (Vitest) |
-| `pnpm test:security` | Tests de seguridad |
 | `pnpm test:e2e` | Tests E2E (Playwright) |
 | `pnpm lint` | ESLint |
 | `pnpm type-check` | TypeScript check |
 
-## Testing
+## Estructura
 
-- **Property-based**: puntos, rachas, insignias, quiz (fast-check, 200 runs)
-- **Seguridad**: OWASP A01-A08 (SQLi, type coercion, UUID forgery, session tampering, race conditions)
-- **E2E**: auth flow, review session, badges, critical path, visual/a11y
-- **Visual**: theme flash prevention, ARIA, keyboard nav, contrast, responsive
+```
+src/
+  features/
+    learning-content/    # catálogo de lecciones + validadores
+    learning-experience/ # componentes Vue de la UI
+    quiz/                # dominio de evaluación (regla 4/5)
+    progress/            # dominio de progreso + adaptador session storage
+  pages/                 # rutas Astro (estáticas)
+  components/ui/         # componentes base (ThemeToggle)
+  composables/           # useLessonProgress, useTheme
+  styles/                # global, accessibility, typography
+  types/                 # contratos del dominio
+tests/
+  unit/                  # 35 tests unitarios (Vitest)
+  e2e/                   # Playwright (pendiente)
+```
 
-## Especificaciones
+## Cómo funciona
 
-Las user stories, behavioral design analysis, DDD analysis y spec-kit workflow están documentados en:
+Cada lección tiene:
+- **Explicación**: conceptos claros con ejemplos en código
+- **Quiz**: 5 preguntas de selección múltiple con feedback inmediato
+- **Evaluación**: 4/5 correctas + lectura registrada = dominado
+- **Práctica opcional**: ejercicios de razonamiento que no afectan dominio
 
-- `src/docs/` — User stories con behavioral + DDD
-- `.specify/specs/001-microlearn-platform/` — Spec original
-- `.specify/specs/002-microlearn-enhanced/` — Spec consolidado con spec-kit (constitution, spec, plan, tasks, analysis)
+El progreso se guarda en session storage (se pierde al recargar la pestaña).
+
+## Fuera de alcance
+
+- ❌ Cuentas/registro
+- ❌ Persistencia remota (DB)
+- ❌ Puntos, rachas, insignias
+- ❌ Ejecución de código
+- ❌ Certificación
+
+## Licencia
+
+MIT

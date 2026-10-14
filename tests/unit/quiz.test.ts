@@ -1,109 +1,66 @@
 import { describe, it, expect } from 'vitest'
-import * as fc from 'fast-check'
-import { generateQuizOptions } from '../../src/lib/quiz'
-import { calculatePoints } from '../../src/lib/points'
-import type { Card, SessionResult, CardOption } from '../../src/types/app'
+import { gradeQuiz, PASSING_SCORE } from '../../src/features/quiz/domain/grade-quiz'
+import type { Question } from '../../src/types/app'
 
-const DIFFICULTIES = ['easy', 'medium', 'hard'] as const
-
-function makeCard(id: string, topic: string): Card {
-  const optionA: CardOption = { id: 'A', text: `Respuesta correcta para ${id}` }
-  const optionB: CardOption = { id: 'B', text: `Distractor B para ${id}` }
-  const optionC: CardOption = { id: 'C', text: `Distractor C para ${id}` }
-  const optionD: CardOption = { id: 'D', text: `Distractor D para ${id}` }
+function q(id: string, correct: 'A' | 'B' | 'C' | 'D'): Question {
   return {
     id,
-    title: `Card-${id}`,
-    content: `Content for ${id}`,
-    topic,
-    subtopic: 'sub',
-    difficulty: 'easy',
-    points: 10,
-    question: `Question for ${id}?`,
-    options: [optionA, optionB, optionC, optionD],
-    correctAnswer: 'A',
+    prompt: `Pregunta ${id}`,
+    options: ['opA', 'opB', 'opC', 'opD'],
+    correctOptionId: correct,
+    explanation: `Explicación ${id}`,
   }
 }
 
-const arbitraryCard = fc.record({
-  id: fc.uuid(),
-  topic: fc.constantFrom('JavaScript', 'TypeScript', 'CSS', 'HTML'),
-}).map(({ id, topic }) => makeCard(id, topic))
+const quiz: Question[] = [
+  q('q1', 'A'),
+  q('q2', 'B'),
+  q('q3', 'C'),
+  q('q4', 'D'),
+  q('q5', 'A'),
+]
 
-describe('generateQuizOptions', () => {
-  it('P7: siempre genera exactamente 4 opciones unicas con la respuesta correcta', () => {
-    const scenario = fc.uniqueArray(fc.uuid(), { minLength: 1, maxLength: 10 }).chain((ids) => {
-      const card = makeCard(ids[0], 'JavaScript')
-      return fc.constant({ card })
-    })
-
-    fc.assert(
-      fc.property(scenario, ({ card }) => {
-        const options = generateQuizOptions(card)
-
-        expect(options).toHaveLength(4)
-
-        const titles = options.map(o => o.title)
-        expect(new Set(titles).size).toBe(4)
-
-        const correctOptions = options.filter(o => o.isCorrect)
-        expect(correctOptions).toHaveLength(1)
-
-        expect(correctOptions[0].id).toBe(card.correctAnswer)
-      }),
-      { numRuns: 100 }
-    )
+describe('gradeQuiz', () => {
+  it('marca passed con 5/5', () => {
+    const result = gradeQuiz(quiz, { q1: 'A', q2: 'B', q3: 'C', q4: 'D', q5: 'A' })
+    expect(result.correctCount).toBe(5)
+    expect(result.passed).toBe(true)
+    expect(result.total).toBe(5)
   })
-})
 
-describe('session simulation', () => {
-  it('P8: simular una sesion produce exactamente N SessionResult, uno por carta', () => {
-    const deckArb = fc.integer({ min: 1, max: 20 }).chain((n) =>
-      fc.tuple(
-        fc.array(
-          fc.record({
-            id: fc.uuid(),
-            difficulty: fc.constantFrom(...DIFFICULTIES),
-          }).map(({ id, difficulty }) => {
-            const optionA: CardOption = { id: 'A', text: 'Correcta' }
-            const optionB: CardOption = { id: 'B', text: 'Incorrecta B' }
-            const optionC: CardOption = { id: 'C', text: 'Incorrecta C' }
-            const optionD: CardOption = { id: 'D', text: 'Incorrecta D' }
-            return {
-              id,
-              title: `Card-${id}`,
-              content: `Content for ${id}`,
-              topic: 'JavaScript',
-              subtopic: 'sub',
-              difficulty,
-              points: 10,
-              question: `Question for ${id}?`,
-              options: [optionA, optionB, optionC, optionD],
-              correctAnswer: 'A',
-            } satisfies Card
-          }),
-          { minLength: n, maxLength: n }
-        ),
-        fc.array(fc.boolean(), { minLength: n, maxLength: n })
-      )
-    )
+  it('marca passed con 4/5 (regla de dominio)', () => {
+    const result = gradeQuiz(quiz, { q1: 'A', q2: 'B', q3: 'C', q4: 'D', q5: 'B' })
+    expect(result.correctCount).toBe(4)
+    expect(result.passed).toBe(true)
+  })
 
-    fc.assert(
-      fc.property(deckArb, ([deck, answers]) => {
-        const results: SessionResult[] = deck.map((card, i) => ({
-          cardId: card.id,
-          correct: answers[i],
-          difficulty: card.difficulty,
-          pointsEarned: calculatePoints(card.difficulty, answers[i]),
-        }))
+  it('marca failed con 3/5', () => {
+    const result = gradeQuiz(quiz, { q1: 'A', q2: 'B', q3: 'C', q4: 'A', q5: 'B' })
+    expect(result.correctCount).toBe(3)
+    expect(result.passed).toBe(false)
+  })
 
-        expect(results).toHaveLength(deck.length)
+  it('ignora respuestas que no corresponden a una pregunta', () => {
+    const result = gradeQuiz(quiz, { q1: 'A', q2: 'B', q3: 'C', q4: 'D', q5: 'A', fantasma: 'B' })
+    expect(result.correctCount).toBe(5)
+  })
 
-        results.forEach((result, i) => {
-          expect(result.cardId).toBe(deck[i].id)
-        })
-      }),
-      { numRuns: 200 }
-    )
+  it('cuenta como incorrecta una respuesta que no está en las opciones', () => {
+    const result = gradeQuiz(quiz, { q1: 'Z', q2: 'B', q3: 'C', q4: 'D', q5: 'A' })
+    expect(result.correctCount).toBe(4)
+  })
+
+  it('incluye feedback explicativo por pregunta en orden', () => {
+    const result = gradeQuiz(quiz, { q1: 'A', q2: 'B', q3: 'C', q4: 'D', q5: 'B' })
+    expect(result.feedback).toHaveLength(5)
+    expect(result.feedback[4]).toContain('Explicación q5')
+  })
+
+  it('expone la constante PASSING_SCORE en 4', () => {
+    expect(PASSING_SCORE).toBe(4)
+  })
+
+  it('lanza error con un quiz que no tenga 5 preguntas', () => {
+    expect(() => gradeQuiz(quiz.slice(0, 3), {})).toThrow()
   })
 })

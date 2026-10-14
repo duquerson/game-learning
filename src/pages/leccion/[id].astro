@@ -1,0 +1,98 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import ThemeToggle from '../../components/ui/ThemeToggle.vue'
+import CourseMap from '../../features/learning-experience/components/CourseMap.vue'
+import LessonView from '../../features/learning-experience/components/LessonView.vue'
+import { lessons, lessonById, nextLesson } from '../../features/learning-content/content'
+
+export const prerender = true
+
+export function getStaticPaths() {
+  return lessons.map((lesson) => ({ params: { id: lesson.id } }))
+}
+
+const { id } = Astro.params
+const lesson = lessonById(id!)
+
+if (!lesson) {
+  return new Response('Lección no encontrada', { status: 404 })
+}
+
+const next = nextLesson(lesson.id)
+---
+
+<BaseLayout title={lesson.title} description={lesson.objective}>
+  <header class="site-header">
+    <a href="/" class="brand">game-learning</a>
+    <ThemeToggle client:load />
+  </header>
+
+  <main id="main-content" class="layout">
+    <aside class="sidebar">
+      <CourseMap client:load currentLessonId={lesson.id} />
+    </aside>
+
+    <div class="content">
+      <LessonView client:load lesson={lesson} />
+
+      <nav class="lesson-nav" aria-label="Navegación entre lecciones">
+        <a href="/" class="nav-link">← Mapa</a>
+        <a v-if="next" href={next ? `/leccion/${next.id}` : '#'} class="nav-link next">
+          Siguiente: {next?.title} →
+        </a>
+      </nav>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.brand {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+.layout {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  display: grid;
+  gap: 2.5rem;
+}
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 18rem 1fr;
+    align-items: start;
+  }
+  .sidebar {
+    position: sticky;
+    top: 1.5rem;
+  }
+}
+.lesson-nav {
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.nav-link {
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+.nav-link:hover {
+  text-decoration: underline;
+}
+</style>

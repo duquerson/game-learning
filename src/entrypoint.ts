@@ -7,12 +7,9 @@
  *
  * Referencia: https://docs.astro.build/en/guides/integrations-guide/vue/#appentrypoint
  */
-import { createPinia } from 'pinia'
 import type { App } from 'vue'
 
-export default (app: App) => {
-  // Crear una instancia de Pinia por cada render (SSR-safe).
-  // No reutilizamos un singleton porque en SSR cada request debe tener
-  // su propio estado para evitar contaminación entre usuarios.
-  app.use(createPinia())
+export default (_app: App) => {
+  // No se usa Pinia en preview estática
+  // app.use(createPinia())
 }
