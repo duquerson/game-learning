@@ -10,9 +10,9 @@ export const intermediateLessons: Lesson[] = [
     explanation: [
       'Las funciones son bloques de código reutilizables.',
       '',
-      '- **Declaración**: `function saluda() {}` — se eleva (hoisting), puede usarse antes de declararse.',
-      '- **Expresión**: `const saluda = function() {}` — no se eleva.',
-      '- **Arrow function**: `const saluda = () => {}` — sintaxis corta; no tiene su propio `this`.',
+      '- **Declaración**: `function saluda() {}` se eleva (hoisting), puede usarse antes de declararse.',
+      '- **Expresión**: `const saluda = function() {}` no se eleva.',
+      '- **Arrow function**: `const saluda = () => {}`, sintaxis corta; no tiene su propio `this`.',
       '',
       '**Scope léxico**: una función ve las variables de sus scopes externos, no al revés. Las variables declaradas con `let/const` viven en el bloque donde se crean.',
       '',
@@ -21,7 +21,7 @@ export const intermediateLessons: Lesson[] = [
     examples: [
       'function sumar(a, b) {\n  return a + b\n}\nconsole.log(sumar(2, 3)) // 5',
       "const doblar = (n) => n * 2\nconst saludar = (nombre) => `Hola, ${nombre}`\nconsole.log(doblar(4), saludar('Ada'))",
-      'function externa() {\n  const secreto = 42\n  return () => secreto\n}\nconst fn = externa()\nconsole.log(fn()) // 42 — la closure conserva "secreto"',
+      'function externa() {\n  const secreto = 42\n  return () => secreto\n}\nconst fn = externa()\nconsole.log(fn()) // 42: la closure conserva "secreto"',
     ],
     quiz: [
       {
@@ -166,7 +166,7 @@ export const intermediateLessons: Lesson[] = [
     examples: [
       "const persona = { nombre: 'Ada', edad: 36 }\nconsole.log(persona.nombre)      // \"Ada\"\nconsole.log(persona['nombre'])   // \"Ada\"",
       "const { nombre, edad = 0 } = persona\nconsole.log(nombre, edad)        // \"Ada\" 36\nconst { pais = 'desconocido' } = persona\nconsole.log(pais)                // \"desconocido\"",
-      'const copia = { ...persona, activo: true }\nconsole.log(copia)               // { nombre, edad, activo: true }\nconsole.log(persona.activo)      // undefined — el original no cambia',
+      'const copia = { ...persona, activo: true }\nconsole.log(copia)               // { nombre, edad, activo: true }\nconsole.log(persona.activo)      // undefined (el original no cambia)',
       'const config = {}\nconsole.log(config?.opcion?.timeout) // undefined, sin error',
     ],
     quiz: [

@@ -11,8 +11,15 @@ const props = defineProps<{
 
 const { registerRead, registerQuizResult, isMastered } = useLessonProgress()
 
+const LEVEL_LABELS: Record<string, string> = {
+  basico: 'Básico',
+  intermedio: 'Intermedio',
+  avanzado: 'Avanzado',
+}
+
 const explanationHtml = computed(() => formatExplanation(props.lesson.explanation))
 const mastered = computed(() => isMastered(props.lesson.id))
+const levelLabel = computed(() => LEVEL_LABELS[props.lesson.level] ?? props.lesson.level)
 
 onMounted(() => {
   // Dominar exige marcar lectura (design.md): se registra al abrir la lección.
@@ -27,7 +34,7 @@ function onQuizCompleted(result: QuizResult) {
 <template>
   <article class="lesson">
     <header class="lesson-header">
-      <p class="lesson-level">{{ lesson.level }}</p>
+      <p class="lesson-level">{{ levelLabel }}</p>
       <h1 class="lesson-title">{{ lesson.title }}</h1>
       <p class="lesson-objective">
         <strong>Objetivo:</strong> {{ lesson.objective }}

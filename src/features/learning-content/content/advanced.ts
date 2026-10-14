@@ -21,7 +21,7 @@ export const advancedLessons: Lesson[] = [
     examples: [
       'function crearContador() {\n  let cuenta = 0\n  return () => ++cuenta\n}\nconst contador = crearContador()\nconsole.log(contador()) // 1\nconsole.log(contador()) // 2\nconsole.log(contador()) // 3',
       "function crearSaludo(saludo) {\n  return (nombre) => `${saludo}, ${nombre}`\n}\nconst hola = crearSaludo('Hola')\nconsole.log(hola('Ada'))   // \"Hola, Ada\"\nconsole.log(hola('Grace')) // \"Hola, Grace\"",
-      'const fns = []\nfor (var i = 0; i < 3; i++) {\n  fns.push(() => i)\n}\nconsole.log(fns.map(f => f())) // [3, 3, 3] — misma variable\n// Con let: [0, 1, 2]',
+      'const fns = []\nfor (var i = 0; i < 3; i++) {\n  fns.push(() => i)\n}\nconsole.log(fns.map(f => f())) // [3, 3, 3] (misma variable)\n// Con let: [0, 1, 2]',
     ],
     quiz: [
       {

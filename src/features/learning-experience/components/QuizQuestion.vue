@@ -67,35 +67,37 @@ const isCorrectSelection = computed(
       <h2 id="quiz-heading" class="quiz-heading">Comprueba tu comprensión</h2>
       <p class="quiz-progress" role="status">Pregunta {{ questionNumber }} de {{ quiz.length }}</p>
 
-      <fieldset class="question">
-        <legend class="prompt">{{ current.prompt }}</legend>
-        <label
-          v-for="(option, i) in current.options"
-          :key="OPTION_IDS[i]"
-          class="option"
-          :class="{
-            selected: currentAnswer === OPTION_IDS[i],
-            'reveal-correct': submitted && OPTION_IDS[i] === current.correctOptionId,
-            'reveal-wrong': submitted && currentAnswer === OPTION_IDS[i] && OPTION_IDS[i] !== current.correctOptionId,
-          }"
-        >
-          <input
-            type="radio"
-            :name="current.id"
-            :value="OPTION_IDS[i]"
-            :checked="currentAnswer === OPTION_IDS[i]"
-            :disabled="submitted"
-            class="sr-only"
-            @change="selectOption(OPTION_IDS[i])"
-          />
-          <span class="option-letter" aria-hidden="true">{{ OPTION_IDS[i] }}</span>
-          <span class="option-text">{{ option }}</span>
-        </label>
-      </fieldset>
+      <div class="stage">
+        <fieldset class="question">
+          <legend class="prompt">{{ current.prompt }}</legend>
+          <label
+            v-for="(option, i) in current.options"
+            :key="OPTION_IDS[i]"
+            class="option"
+            :class="{
+              selected: currentAnswer === OPTION_IDS[i],
+              'reveal-correct': submitted && OPTION_IDS[i] === current.correctOptionId,
+              'reveal-wrong': submitted && currentAnswer === OPTION_IDS[i] && OPTION_IDS[i] !== current.correctOptionId,
+            }"
+          >
+            <input
+              type="radio"
+              :name="current.id"
+              :value="OPTION_IDS[i]"
+              :checked="currentAnswer === OPTION_IDS[i]"
+              :disabled="submitted"
+              class="sr-only"
+              @change="selectOption(OPTION_IDS[i])"
+            />
+            <span class="option-letter" aria-hidden="true">{{ OPTION_IDS[i] }}</span>
+            <span class="option-text">{{ option }}</span>
+          </label>
+        </fieldset>
 
-      <div v-if="submitted" class="feedback" :class="isCorrectSelection ? 'ok' : 'ko'" role="status" aria-live="polite">
-        <strong>{{ isCorrectSelection ? 'Correcta.' : currentAnswer ? 'Incorrecta.' : 'Sin responder.' }}</strong>
-        {{ current.explanation }}
+        <div v-if="submitted" class="feedback" :class="isCorrectSelection ? 'ok' : 'ko'" role="status" aria-live="polite">
+          <strong>{{ isCorrectSelection ? 'Correcta.' : currentAnswer ? 'Incorrecta.' : 'Sin responder.' }}</strong>
+          {{ current.explanation }}
+        </div>
       </div>
 
       <div class="actions">
@@ -117,7 +119,7 @@ const isCorrectSelection = computed(
     <template v-else-if="result">
       <h2 id="quiz-heading" class="quiz-heading">Resultado del quiz</h2>
       <p class="score" :class="result.passed ? 'ok' : 'ko'" role="status">
-        {{ result.correctCount }}/{{ result.total }} correctas —
+        {{ result.correctCount }}/{{ result.total }} correctas.
         {{ result.passed ? '¡Lección dominada!' : 'Necesitas 4/5 para dominar. Puedes reintentar sin límite.' }}
       </p>
       <ul class="feedback-list">
@@ -148,6 +150,9 @@ const isCorrectSelection = computed(
   border: none;
   margin: 0;
   padding: 0;
+}
+.stage {
+  min-height: 24rem;
 }
 .prompt {
   font-weight: 700;
@@ -231,7 +236,10 @@ const isCorrectSelection = computed(
   border: 1px solid transparent;
   cursor: pointer;
   font-family: inherit;
-  transition: filter 0.15s;
+  transition: filter 0.15s, transform 0.1s;
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
 }
 .btn.primary {
   background: var(--color-primary);

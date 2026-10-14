@@ -32,15 +32,7 @@ function stateClass(lessonId: string): string {
 
 <template>
   <nav aria-label="Ruta de aprendizaje" class="course-map">
-    <div class="map-summary" role="status">
-      <span class="summary-count">{{ masteredCount }}/{{ totalLessons }} dominadas</span>
-      <div class="summary-bar" aria-hidden="true">
-        <div
-          class="summary-fill"
-          :style="{ transform: `scaleX(${masteredCount / totalLessons})` }"
-        ></div>
-      </div>
-    </div>
+    <p class="map-summary" role="status">{{ masteredCount }}/{{ totalLessons }} dominadas</p>
 
     <section v-for="level in levels" :key="level.id" class="level">
       <h2 class="level-title">{{ level.title }}</h2>
@@ -62,7 +54,7 @@ function stateClass(lessonId: string): string {
     </section>
 
     <p class="preview-hint">
-      Tu progreso es efímero: se reinicia al cerrar la pestaña.
+      Tu progreso se guarda en esta pestaña y se borra al cerrarla.
     </p>
   </nav>
 </template>
@@ -74,28 +66,10 @@ function stateClass(lessonId: string): string {
   gap: 1.75rem;
 }
 .map-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-.summary-count {
+  margin: 0;
   font-size: var(--text-sm);
   color: var(--color-muted);
   font-weight: 600;
-}
-.summary-bar {
-  height: 6px;
-  background: var(--color-border);
-  border-radius: 99px;
-  overflow: hidden;
-}
-.summary-fill {
-  height: 100%;
-  width: 100%;
-  background: var(--color-progress);
-  border-radius: 99px;
-  transform-origin: left center;
-  transition: transform 0.3s ease;
 }
 .level-title {
   font-size: var(--text-h3);

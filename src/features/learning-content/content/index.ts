@@ -34,6 +34,6 @@ export function nextLesson(id: string): Lesson | undefined {
 const errors = validateCatalog(lessons)
 if (errors.length > 0) {
   throw new Error(
-    `Contenido inválido — el build se detiene:\n${errors.map((e) => `  - ${e}`).join('\n')}`
+    `Contenido inválido: el build se detiene.\n${errors.map((e) => `  - ${e}`).join('\n')}`
   )
 }
