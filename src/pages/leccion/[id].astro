@@ -70,11 +70,12 @@ const next = nextLesson(lesson.id)
   margin: 0 auto;
   padding: 2rem 1.5rem 4rem;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2.5rem;
 }
 @media (min-width: 1024px) {
   .layout {
-    grid-template-columns: 18rem 1fr;
+    grid-template-columns: 18rem minmax(0, 1fr);
     align-items: start;
   }
   .content {
