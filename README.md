@@ -6,7 +6,7 @@ Plataforma de aprendizaje de JavaScript para principiantes. Un cuaderno de explo
 
 | Capa | Tecnología |
 |---|---|
-| Framework | Astro 6 (islands architecture, output estático) |
+| Framework | Astro 7 (islands architecture, output estático) |
 | Componentes | Vue 3 + Composition API |
 | Estilos | TailwindCSS v4 + CSS custom properties |
 | Tests | Vitest (unit) + Playwright (E2E) |
@@ -17,14 +17,14 @@ Plataforma de aprendizaje de JavaScript para principiantes. Un cuaderno de explo
 - 📚 9 lecciones con explicación, ejemplos y quiz formativo
 - ✅ Quiz de 5 preguntas × 4 opciones, feedback inmediato
 - 🎯 Evaluación formativa: 4/5 correctas + lectura = dominado
-- 🔄 Progreso efímero (session storage, se pierde al recargar)
+- 🔄 Progreso efímero (session storage: sobrevive recargas, se borra al cerrar la pestaña)
 - 🌓 Tema claro/oscuro con paleta topográfica
 - 📱 Mobile-first responsive
 - ♿ Accesible (skip link, keyboard nav, ARIA, prefers-reduced-motion)
 
 ## Requisitos
 
-- Node.js 20+
+- Node.js 22.12+ (recomendado 24)
 - pnpm 9
 
 ## Setup
@@ -64,7 +64,7 @@ src/
   types/                 # contratos del dominio
 tests/
   unit/                  # 35 tests unitarios (Vitest)
-  e2e/                   # Playwright (pendiente)
+  e2e/                   # 11 tests E2E (Playwright/Chromium)
 ```
 
 ## Cómo funciona
@@ -75,7 +75,7 @@ Cada lección tiene:
 - **Evaluación**: 4/5 correctas + lectura registrada = dominado
 - **Práctica opcional**: ejercicios de razonamiento que no afectan dominio
 
-El progreso se guarda en session storage (se pierde al recargar la pestaña).
+El progreso se guarda en session storage (sobrevive recargas; se borra al cerrar la pestaña).
 
 ## Fuera de alcance
 
