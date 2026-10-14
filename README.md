@@ -67,6 +67,19 @@ tests/
   e2e/                   # 11 tests E2E (Playwright/Chromium)
 ```
 
+## Despliegue
+
+El build es 100% estático (`dist/`). Opciones gratuitas preparadas:
+
+**Cloudflare Pages (recomendado):**
+1. Crea una cuenta en [cloudflare.com](https://cloudflare.com) (sin tarjeta)
+2. Ve a **Workers & Pages → Create → Pages → Connect to Git**
+3. Selecciona `duquerson/game-learning`
+4. Build command: `pnpm build` · Output: `dist` · Node: `24` (`.nvmrc` lo fija)
+5. Save and Deploy → `game-learning.pages.dev`
+
+**Netlify (alternativa):** el repo incluye `netlify.toml` (build `pnpm build`, publish `dist`, Node 24). Conecta el repo en [netlify.com](https://netlify.com).
+
 ## Cómo funciona
 
 Cada lección tiene:

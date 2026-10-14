@@ -99,24 +99,10 @@ const isCorrectSelection = computed(
           {{ current.explanation }}
         </div>
       </div>
+  </template>
 
-      <div class="actions">
-        <button
-          v-if="!submitted"
-          type="button"
-          class="btn primary touch-target"
-          :disabled="!currentAnswer"
-          @click="checkAnswer"
-        >
-          Comprobar respuesta
-        </button>
-        <button v-else type="button" class="btn primary touch-target" @click="next">
-          {{ questionNumber >= quiz.length ? 'Ver resultado' : 'Siguiente pregunta' }}
-        </button>
-      </div>
-    </template>
-
-    <template v-else-if="result">
+  <template v-else-if="result">
+    <div class="stage">
       <h2 id="quiz-heading" class="quiz-heading">Resultado del quiz</h2>
       <p class="score" :class="result.passed ? 'ok' : 'ko'" role="status">
         {{ result.correctCount }}/{{ result.total }} correctas.
@@ -125,11 +111,27 @@ const isCorrectSelection = computed(
       <ul class="feedback-list">
         <li v-for="(line, i) in result.feedback" :key="i">{{ line }}</li>
       </ul>
-      <div class="actions">
-        <button type="button" class="btn secondary touch-target" @click="retry">Reintentar quiz</button>
-        <a class="btn primary touch-target" href="/">Volver al mapa</a>
-      </div>
-    </template>
+    </div>
+  </template>
+
+  <div class="actions">
+    <button
+      v-if="!finished && !submitted"
+      type="button"
+      class="btn primary touch-target"
+      :disabled="!currentAnswer"
+      @click="checkAnswer"
+    >
+      Comprobar respuesta
+    </button>
+    <button v-else-if="!finished" type="button" class="btn primary touch-target" @click="next">
+      {{ questionNumber >= quiz.length ? 'Ver resultado' : 'Siguiente pregunta' }}
+    </button>
+    <button v-else type="button" class="btn secondary touch-target" @click="retry">
+      Reintentar quiz
+    </button>
+    <a v-if="finished" class="btn primary touch-target" href="/">Volver al mapa</a>
+  </div>
   </section>
 </template>
 
