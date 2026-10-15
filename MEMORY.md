@@ -35,7 +35,7 @@ Plataforma de aprendizaje de JavaScript para principiantes: **preview pública e
 ## Riesgos y decisiones pendientes
 
 - **Rama:** `main` como default local y remoto (`origin/main`, `origin/HEAD → main`); `origin/master` avanzada a `main` por fast-forward. Rama `refactor-project` fusionada y eliminada.
-- **Deploy GitHub Pages (2026-10-15):** `site: https://duquerson.github.io` + `base: game-learning` en `astro.config.mjs`; helper `src/lib/withBase.ts` para los 10 enlaces internos absolutos; workflow `.github/workflows/deploy.yml` (build + deploy, Node 24); `public/.nojekyll`. Pendiente de activar: Settings → Pages → Source GitHub Actions, luego verificar https://duquerson.github.io/game-learning/.
+- **Deploy GitHub Pages (2026-10-15):** `site: https://duquerson.github.io` + `base: game-learning` en `astro.config.mjs`; helper `src/lib/withBase.ts` para los 10 enlaces internos absolutos; workflow `.github/workflows/deploy.yml` (build + deploy, Node 24); `public/.nojekyll`. Pages activado (`build_type: workflow`) y demo verificada viva en https://duquerson.github.io/game-learning/ (portada + lección).
 - **Contenido didáctico:** redactado por IA, requiere revisión humana de calidad pedagógica.
 - Baseline anterior `2afcfc8ae1b99b021c6b6daafd647d791179ff7d`; HEAD actual es la implementación completa.
 
