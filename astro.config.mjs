@@ -4,6 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   output: 'static',
+  site: 'https://duquerson.github.io',
+  base: 'game-learning',
   security: {
     csp: {
       algorithm: 'SHA-256',

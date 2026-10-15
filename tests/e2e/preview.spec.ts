@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test'
 
+// Base path del despliegue (Pages: /game-learning, inyectado por webServer)
+const BASE = process.env.PAGES_BASE ?? '/game-learning'
+const home = () => `${BASE}/`
+const lesson = (id: string) => `${BASE}/leccion/${id}`
+
 async function waitHydrated(page: import('@playwright/test').Page) {
   // LessonView registra la lectura en onMounted → señala hidratación Vue completa
   await page.waitForFunction(() => localStorage.getItem('game-learning:progress') !== null)
@@ -16,16 +21,16 @@ async function answerCurrent(page: import('@playwright/test').Page, letter: stri
 
 test.describe('preview anónima — flujo principal', () => {
   test('la portada muestra el mapa de 9 lecciones', async ({ page }) => {
-    await page.goto('/')
+    await page.goto(home())
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     // 9 enlaces de lección en el CourseMap (el banner Continuar usa .continue-link)
-    const lessonLinks = page.locator('a.lesson-link[href^="/leccion/"]')
+    const lessonLinks = page.locator('a.lesson-link[href*="/leccion/"]')
     await expect(lessonLinks).toHaveCount(9)
   })
 
   test('navega a una lección y muestra el contenido', async ({ page }) => {
-    await page.goto('/')
-    await page.locator('a.lesson-link[href="/leccion/basico-variables"]').click()
+    await page.goto(home())
+    await page.locator('a.lesson-link[href$="/leccion/basico-variables"]').click()
     await expect(page).toHaveURL(/\/leccion\/basico-variables/)
     await expect(page.getByRole('heading', { level: 1, name: /Variables/ })).toBeVisible()
     // Explicación y quiz presentes
@@ -34,7 +39,7 @@ test.describe('preview anónima — flujo principal', () => {
   })
 
   test('el quiz permite responder y mostrar feedback', async ({ page }) => {
-    await page.goto('/leccion/basico-variables')
+    await page.goto(lesson('basico-variables'))
     // Esperar a que el island de Vue hidrate
     await expect(page.getByText('Pregunta 1 de 5')).toBeVisible()
     await waitHydrated(page)
@@ -52,7 +57,7 @@ test.describe('preview anónima — flujo principal', () => {
   })
 
   test('el progreso se guarda en local storage (persiste al cerrar)', async ({ page }) => {
-    await page.goto('/leccion/basico-variables')
+    await page.goto(lesson('basico-variables'))
     await expect(page.getByText('Pregunta 1 de 5')).toBeVisible()
     // El quiz se sirve por SSR: esperar a que la hidratación registre la lectura
     await page.waitForFunction(() => localStorage.getItem('game-learning:progress') !== null)
@@ -63,17 +68,17 @@ test.describe('preview anónima — flujo principal', () => {
   })
 
   test('el progreso sobrevive a la recarga y ofrece continuar', async ({ page }) => {
-    await page.goto('/leccion/basico-variables')
+    await page.goto(lesson('basico-variables'))
     await expect(page.getByText('Pregunta 1 de 5')).toBeVisible()
     await page.waitForFunction(() => localStorage.getItem('game-learning:progress') !== null)
     await page.reload()
     await expect(page.getByText('Pregunta 1 de 5')).toBeVisible()
-    await expect(page.locator('a.lesson-link[href="/leccion/basico-variables"]')).toContainText('En curso')
+    await expect(page.locator('a.lesson-link[href$="/leccion/basico-variables"]')).toContainText('En curso')
     await expect(page.getByRole('link', { name: /Continuar:/ })).toBeVisible()
   })
 
   test('skip link funciona con teclado', async ({ page }) => {
-    await page.goto('/')
+    await page.goto(home())
     await page.keyboard.press('Tab')
     const skipLink = page.locator('.skip-link')
     await expect(skipLink).toBeFocused()
@@ -84,7 +89,7 @@ test.describe('preview anónima — flujo principal', () => {
 
 test.describe('preview anónima — cobertura ampliada', () => {
   test('quiz completo con 5/5 marca la lección como dominada', async ({ page }) => {
-    await page.goto('/leccion/basico-variables')
+    await page.goto(lesson('basico-variables'))
     await expect(page.getByText('Pregunta 1 de 5')).toBeVisible()
     // Respuestas correctas de basico-variables: C, B, C, C, C
     for (const letter of ['C', 'B', 'C', 'C', 'C']) {
@@ -95,12 +100,12 @@ test.describe('preview anónima — cobertura ampliada', () => {
     await expect(page.locator('.score')).toContainText('¡Lección dominada!')
     await expect(page.locator('.mastered-badge')).toBeVisible()
     await page.getByRole('link', { name: 'Volver al mapa' }).click()
-    await expect(page).toHaveURL('/')
-    await expect(page.locator('a[href="/leccion/basico-variables"]')).toContainText('Dominado')
+    await expect(page).toHaveURL(new RegExp(`${BASE}/?$`))
+    await expect(page.locator('a.lesson-link[href$="/leccion/basico-variables"]')).toContainText('Dominado')
   })
 
   test('quiz con fallo ofrece reintento que vuelve a la pregunta 1', async ({ page }) => {
-    await page.goto('/leccion/basico-variables')
+    await page.goto(lesson('basico-variables'))
     await expect(page.getByText('Pregunta 1 de 5')).toBeVisible()
     // Opción A es incorrecta en las 5 preguntas de esta lección
     for (let i = 0; i < 5; i++) {
@@ -114,7 +119,7 @@ test.describe('preview anónima — cobertura ampliada', () => {
   })
 
   test('el tema oscuro se aplica y persiste tras recargar', async ({ page }) => {
-    await page.goto('/')
+    await page.goto(home())
     await page.getByRole('button', { name: 'Cambiar a tema oscuro' }).click()
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
     const stored = await page.evaluate(() => localStorage.getItem('theme'))
@@ -124,19 +129,19 @@ test.describe('preview anónima — cobertura ampliada', () => {
   })
 
   test('ruta inexistente muestra la página 404', async ({ page }) => {
-    const response = await page.goto('/no-existe')
+    const response = await page.goto(`${BASE}/no-existe`)
     expect(response?.status()).toBe(404)
     await expect(page.getByRole('heading', { level: 1, name: 'Página no encontrada' })).toBeVisible()
   })
 
   test('portada y lección sin scroll horizontal en móvil 375px', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 })
-    await page.goto('/')
+    await page.goto(home())
     const overflowHome = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth
     )
     expect(overflowHome).toBeLessThanOrEqual(0)
-    await page.goto('/leccion/basico-variables')
+    await page.goto(lesson('basico-variables'))
     await expect(page.getByRole('heading', { level: 1, name: /Variables/ })).toBeVisible()
     const overflowLesson = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth
@@ -145,7 +150,7 @@ test.describe('preview anónima — cobertura ampliada', () => {
   })
 
   test('el enlace siguiente lleva a la siguiente lección', async ({ page }) => {
-    await page.goto('/leccion/basico-variables')
+    await page.goto(lesson('basico-variables'))
     await page.getByRole('link', { name: /Siguiente:/ }).click()
     await expect(page).toHaveURL(/\/leccion\/basico-condicionales/)
     await expect(page.getByRole('heading', { level: 1, name: /Condicionales/ })).toBeVisible()

@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import type { Question, QuizResult } from '@/types/app'
 import { gradeQuiz } from '@/features/quiz/domain/grade-quiz'
 import { nextLesson } from '@/features/learning-content/content'
+import { withBase } from '@/lib/withBase'
 
 const props = defineProps<{
   quiz: Question[]
@@ -134,10 +135,10 @@ const nextUp = computed(() => nextLesson(props.lessonId))
       <button type="button" class="btn secondary touch-target" @click="retry">
         Reintentar quiz
       </button>
-      <a v-if="result?.passed && nextUp" class="btn primary touch-target" :href="`/leccion/${nextUp.id}`">
+      <a v-if="result?.passed && nextUp" class="btn primary touch-target" :href="withBase(`/leccion/${nextUp.id}`)">
         Continuar: {{ nextUp.title }}
       </a>
-      <a class="btn primary touch-target" href="/">Volver al mapa</a>
+      <a class="btn primary touch-target" :href="withBase('/')">Volver al mapa</a>
     </template>
   </div>
   </section>

@@ -56,22 +56,27 @@ src/
     learning-content/    # catálogo de lecciones + validadores
     learning-experience/ # componentes Vue de la UI
     quiz/                # dominio de evaluación (regla 4/5)
-    progress/            # dominio de progreso + adaptador session storage
+    progress/            # dominio de progreso + adaptadores locales (localStorage)
   pages/                 # rutas Astro (estáticas)
   components/ui/         # componentes base (ThemeToggle)
   composables/           # useLessonProgress, useTheme
   styles/                # global, accessibility, typography
   types/                 # contratos del dominio
 tests/
-  unit/                  # 35 tests unitarios (Vitest)
-  e2e/                   # 11 tests E2E (Playwright/Chromium)
+  unit/                  # 44 tests unitarios (Vitest)
+  e2e/                   # 12 tests E2E (Playwright/Chromium)
 ```
 
 ## Despliegue
 
-El build es 100% estático (`dist/`). Opciones gratuitas preparadas:
+El build es 100% estático (`dist/`). Demo viva:
 
-**Cloudflare Pages (recomendado):**
+**GitHub Pages (recomendado):** https://duquerson.github.io/game-learning/
+Despliegue automático con `.github/workflows/deploy.yml` (`withastro/action` + Node 24) en cada push a `main`. Requiere activar una vez en el repo: Settings → Pages → Source: **GitHub Actions**. El sitio vive bajo la subruta `/game-learning` (`site` + `base` en `astro.config.mjs`); los enlaces internos usan el helper `src/lib/withBase.ts`.
+
+Opciones gratuitas alternativas:
+
+**Cloudflare Pages:**
 1. Crea una cuenta en [cloudflare.com](https://cloudflare.com) (sin tarjeta)
 2. Ve a **Workers & Pages → Create → Pages → Connect to Git**
 3. Selecciona `duquerson/game-learning`

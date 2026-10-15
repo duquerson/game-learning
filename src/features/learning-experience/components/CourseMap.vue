@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { levels, lessons, lessonsByLevel, lessonById } from '@/features/learning-content/content'
 import { useLessonProgress } from '@/composables/useLessonProgress'
+import { withBase } from '@/lib/withBase'
 
 defineProps<{
   currentLessonId?: string
@@ -60,7 +61,7 @@ function stateClass(lessonId: string): string {
 
     <p v-if="ready && continueLesson" class="continue-block">
       <span class="continue-progress">Llevas {{ masteredCount }}/{{ totalLessons }} · 5 preguntas · ~5 min · sin timer</span>
-      <a :href="`/leccion/${continueLesson.id}`" class="continue-link">
+      <a :href="withBase(`/leccion/${continueLesson.id}`)" class="continue-link">
         Continuar: {{ continueLesson.title }} →
       </a>
       <span v-if="pendingTitles.length" class="continue-pending">Te faltan: {{ pendingTitles.join(' · ') }}</span>
@@ -72,7 +73,7 @@ function stateClass(lessonId: string): string {
       <ul class="lesson-list">
         <li v-for="lesson in lessonsByLevel(level.id)" :key="lesson.id">
           <a
-            :href="`/leccion/${lesson.id}`"
+            :href="withBase(`/leccion/${lesson.id}`)"
             class="lesson-link"
             :class="[stateClass(lesson.id), { current: lesson.id === currentLessonId }]"
             :aria-current="lesson.id === currentLessonId ? 'page' : undefined"

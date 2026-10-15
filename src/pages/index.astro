@@ -3,13 +3,14 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import ThemeToggle from '../components/ui/ThemeToggle.vue'
 import CourseMap from '../features/learning-experience/components/CourseMap.vue'
 import { lessons } from '../features/learning-content/content'
+import { withBase } from '../lib/withBase'
 
 export const prerender = true
 ---
 
 <BaseLayout title="Mapa de aprendizaje">
   <header class="site-header">
-    <a href="/" class="brand" translate="no">game-learning</a>
+    <a href={withBase('/')} class="brand" translate="no">game-learning</a>
     <ThemeToggle client:load />
   </header>
 

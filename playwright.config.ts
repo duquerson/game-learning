@@ -17,9 +17,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: process.env.CI ? 'pnpm build && pnpm preview' : 'pnpm dev',
-    url: 'http://localhost:4321',
+    command: process.env.CI ? 'pnpm build && node scripts/serve-pages.mjs' : 'pnpm dev',
+    url: 'http://localhost:4321/game-learning/',
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
+    env: { PAGES_BASE: '/game-learning' },
   },
 })

@@ -2,11 +2,11 @@
 
 ## Estado
 
-**Preview estática implementada.** Limpieza del legado MicroLearn completada y commiteada; features `learning-content`, `quiz`, `progress` y `learning-experience` implementadas con TDD (35 tests unitarios). Build estático genera 12 páginas (portada + 9 lecciones + 404/500). Revisión UI vs Web Interface Guidelines ejecutada y correcciones aplicadas (2026-10-14). Pasada anti-slop/taste aplicada (2026-10-14). Auditoría de estado + reparación de CI + netlify.toml + E2E ampliados a 11 (2026-10-14). Pendiente: rename de rama y deploy a Netlify (en espera, no ejecutado) y revisión humana del contenido.
+**Preview estática implementada y publicada en GitHub Pages.** Limpieza del legado MicroLearn completada y commiteada; features `learning-content`, `quiz`, `progress` y `learning-experience` implementadas con TDD (44 tests unitarios). Build estático genera 12 páginas (portada + 9 lecciones + 404/500). Revisión UI vs Web Interface Guidelines ejecutada y correcciones aplicadas (2026-10-14). Pasada anti-slop/taste aplicada (2026-10-14). Auditoría de estado + reparación de CI + netlify.toml + E2E ampliados a 12 (2026-10-14). Deploy Pages automatizado con `withastro/action` (2026-10-15): demo viva en https://duquerson.github.io/game-learning/. Pendiente: activar Pages en Settings del repo y revisión humana del contenido.
 
 ## Objetivo
 
-Plataforma de aprendizaje de JavaScript para principiantes: **preview pública estática** en Netlify, anónima y sin persistencia. El alcance actual no ejecuta código ni certifica dominio.
+Plataforma de aprendizaje de JavaScript para principiantes: **preview pública estática** en GitHub Pages, anónima, con progreso local en el navegador. El alcance actual no ejecuta código ni certifica dominio.
 
 ## Decisiones importantes
 
@@ -29,13 +29,13 @@ Plataforma de aprendizaje de JavaScript para principiantes: **preview pública e
 ## Infraestructura y gates
 
 - **Gate actual:** `pnpm type-check` + `pnpm lint` + `pnpm exec vitest run` + `pnpm build` + `pnpm exec playwright test` deben pasar.
-- **Tests:** 35 unitarios (Vitest) + 11 E2E (Playwright/Chromium, `tests/e2e/preview.spec.ts`): smoke + quiz completo/reintento + tema oscuro + 404 + móvil 375px + navegación. Validados también en modo CI (`build && preview`).
+- **Tests:** 44 unitarios (Vitest) + 12 E2E (Playwright/Chromium, `tests/e2e/preview.spec.ts`): smoke + quiz completo/reintento + tema oscuro + 404 + móvil 375px + navegación. E2E base-aware (`PAGES_BASE=/game-learning`) y CI contra build real servido bajo subruta (`scripts/serve-pages.mjs`).
 - **Build:** 12 páginas estáticas (index + 9 lecciones + 404 + 500).
 
 ## Riesgos y decisiones pendientes
 
-- **Rama:** renombrado local `master`→`main` hecho; **`origin/master` intacto** (sin push, decisión del usuario). El default branch en GitHub sigue siendo `master` hasta que el usuario lo renombre en la UI y haga push de `main`.
-- **Deploy Netlify no ejecutado:** `netlify.toml` listo; falta conectar repo y verificar URL live.
+- **Rama:** `main` como default local y remoto (`origin/main`, `origin/HEAD → main`); `origin/master` avanzada a `main` por fast-forward. Rama `refactor-project` fusionada y eliminada.
+- **Deploy GitHub Pages (2026-10-15):** `site: https://duquerson.github.io` + `base: game-learning` en `astro.config.mjs`; helper `src/lib/withBase.ts` para los 10 enlaces internos absolutos; workflow `.github/workflows/deploy.yml` (build + deploy, Node 24); `public/.nojekyll`. Pendiente de activar: Settings → Pages → Source GitHub Actions, luego verificar https://duquerson.github.io/game-learning/.
 - **Contenido didáctico:** redactado por IA, requiere revisión humana de calidad pedagógica.
 - Baseline anterior `2afcfc8ae1b99b021c6b6daafd647d791179ff7d`; HEAD actual es la implementación completa.
 

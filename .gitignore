@@ -4,11 +4,8 @@ node_modules/
 .env.*.local
 .env.test
 .doppler.env
-dist/
-.astro/
-.vercel/
 
-# IDE & Editor
+# IDE, editores y tooling con carpetas ocultas
 .vscode/
 .idea/
 .windsurf/
@@ -16,6 +13,10 @@ dist/
 .kiro/
 .specify/
 .agents/
+.github/agents/
+.opencode/
+.codex/
+.cursor/
 .npmrc
 
 # Logs
@@ -53,10 +54,13 @@ skills-lock.json
 # Supabase local
 supabase/.temp/
 
-# Generated files
-nul
-# Build artifacts
+# Build outputs (carpetas ocultas de tooling)
 .netlify/
+.vercel/
 dist/
 .astro/
+
+# Archivo stray de Windows
+nul
+
 

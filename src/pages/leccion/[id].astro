@@ -4,6 +4,7 @@ import ThemeToggle from '../../components/ui/ThemeToggle.vue'
 import CourseMap from '../../features/learning-experience/components/CourseMap.vue'
 import LessonView from '../../features/learning-experience/components/LessonView.vue'
 import { lessons, lessonById, nextLesson } from '../../features/learning-content/content'
+import { withBase } from '../../lib/withBase'
 
 export const prerender = true
 
@@ -23,7 +24,7 @@ const next = nextLesson(lesson.id)
 
 <BaseLayout title={lesson.title} description={lesson.objective}>
   <header class="site-header">
-    <a href="/" class="brand" translate="no">game-learning</a>
+    <a href={withBase('/')} class="brand" translate="no">game-learning</a>
     <ThemeToggle client:load />
   </header>
 
@@ -32,9 +33,9 @@ const next = nextLesson(lesson.id)
       <LessonView client:load lesson={lesson} />
 
       <nav class="lesson-nav" aria-label="Navegación entre lecciones">
-        <a href="/" class="nav-link">← Mapa</a>
+        <a href={withBase('/')} class="nav-link">← Mapa</a>
         {next && (
-          <a href={`/leccion/${next.id}`} class="nav-link next">
+          <a href={withBase(`/leccion/${next.id}`)} class="nav-link next">
             Siguiente: {next.title} →
           </a>
         )}
