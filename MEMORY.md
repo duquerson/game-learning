@@ -12,9 +12,9 @@ Plataforma de aprendizaje de JavaScript para principiantes: **preview pública e
 
 - **ADR-001 — Feature-Oriented Architecture:** features son la unidad primaria (`learning-content`, `learning-experience`, `quiz`, `progress`).
 - **ADR-002 — Dominio puro:** reglas educativas se prueban sin DOM, framework ni base de datos.
-- **ADR-003 — Preview estática:** sin cuentas, sin Supabase, sin persistencia remota; progreso en session storage.
+- **ADR-003 — Preview local anónima:** sin cuentas, sin Supabase, sin persistencia remota; progreso en localStorage (migra session previa, fallback a session). Incluye "Continuar donde quedaste", borrado con confirmación y celebración sutil accesible (behavioral intermedio, 2026-10-15).
 - **Quiz formativo:** 5 preguntas × 4 opciones, feedback inmediato, reintentos ilimitados. Dominio: 4/5 correctas + lectura.
-- **Sin gamificación:** no puntos, rachas, insignias, temporizador ni leaderboard (contradecían constitution).
+- **Sin gamificación:** no puntos, rachas, insignias, temporizador ni leaderboard. X/9 + “Continuar” es cue de retorno D1, no racha (2026-10-15).
 - **Tema visual:** paleta topográfica (slate-map, deep-water, field-cyan, amber-marker, moss-progress, paper-light). Tipografías: Atkinson Hyperlegible (lectura), Space Grotesk (títulos), JetBrains Mono (código).
 - **Contenido canónico:** 9 lecciones (3 niveles × 3 unidades) versionadas en Git en `src/features/learning-content/content/`; validadas en import (falla el build si el contenido es inválido).
 - **Netlify adapter eliminado:** Astro 6 + @astrojs/netlify v4 incompatibles; output `static` puro no necesita adapter. Deploy como sitio estático.

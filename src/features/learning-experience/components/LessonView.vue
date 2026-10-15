@@ -39,7 +39,7 @@ function onQuizCompleted(result: QuizResult) {
       <p class="lesson-objective">
         <strong>Objetivo:</strong> {{ lesson.objective }}
       </p>
-      <p v-if="mastered" class="mastered-badge" role="status">Lección dominada</p>
+      <p v-if="mastered" class="mastered-badge mastered-celebrate" role="status">Lección dominada</p>
     </header>
 
     <section aria-labelledby="explicacion" class="lesson-body prose-measure">
@@ -98,6 +98,15 @@ function onQuizCompleted(result: QuizResult) {
   font-weight: 600;
   color: var(--color-progress);
   border: 1px solid var(--color-progress);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mastered-celebrate {
+    animation: mastered-pop 350ms ease-out;
+  }
+}
+@keyframes mastered-pop {
+  from { transform: scale(0.96); opacity: 0.4; }
+  to { transform: scale(1); opacity: 1; }
 }
 .lesson-body {
   margin-bottom: 2rem;

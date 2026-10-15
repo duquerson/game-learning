@@ -19,7 +19,7 @@ Principios: Feature-Oriented Architecture (FOA); dominio educativo testeable sin
 | `ai-advisor` | Sugerencias educativas opcionales, nunca calificación | Compleja y diferida | Solo al aprobarse: puerto de asesoría, adaptadores opcionales Gemini Nano/Ollama y fallback curado; desactivable sin afectar el aprendizaje. |
 | `code-runner` | Ejecución aislada de respuestas de código | Compleja y fuera del MVP | No crear ni desplegar en el alcance actual. Requiere decisión futura, dominio propio, revisión de amenazas y sandbox dedicado; un contenedor común no es suficiente. |
 
-No hay puntuación, rachas, insignias, temporizador ni dominio por ejercicios opcionales.
+No hay puntuación, rachas, insignias, temporizador ni dominio por ejercicios opcionales. El contador X/9 + “Continuar” es cue de retorno local, no racha.
 
 ## Topología por etapa
 
@@ -27,13 +27,13 @@ No hay puntuación, rachas, insignias, temporizador ni dominio por ejercicios op
 
 ```text
 Navegador
-   │ páginas y quiz; estado solo durante la sesión
+   │ páginas y quiz; estado local anónimo (localStorage)
    ▼
 Astro estático + interacciones Vue ── Netlify
    └── contenido público versionado en Git
 ```
 
-No requiere Hono, Kratos, PostgreSQL ni llamadas a proveedor de IA. Tras recarga/cierre no se conserva progreso.
+No requiere Hono, Kratos, PostgreSQL ni llamadas a proveedor de IA. El progreso sobrevive al cierre; solo vive en este navegador y puede borrarse.
 
 ### Modo local previsto
 
@@ -92,7 +92,7 @@ La forma concreta debe integrarse con el repositorio vigente tras la fase de re-
 - Contenido canónico: versionado en Git; seeds idempotentes si se sincroniza con DB.
 - Quiz: pregunta, cuatro opciones, identificador de respuesta y explicación; el cliente muestra resultado inmediato. Como el contenido es público, no se promete resistencia a inspección.
 - Progreso: estados `not_started`, `in_progress`, `mastered`; dominio exige lectura registrada y 4/5; reintentos ilimitados.
-- Preview: progreso efímero; sin almacenamiento remoto ni creación de cuenta.
+- Preview: progreso local anónimo (localStorage, con migración best-effort desde session previa y fallback a session si local no disponible); sin almacenamiento remoto ni creación de cuenta.
 - Local: instancia individual, almacenamiento local opcional definido en implementación; jamás sincroniza con beta.
 - Beta: identidad de Kratos y datos de progreso en persistencia separada por usuario; no aceptar score calculado por cliente como autoridad. Backend carga respuestas correctas y verifica cada intento.
 - Cuenta propuesta: nombre de usuario + contraseña; sin correo obligatorio; acceso inicial por invitación de un solo uso; sin recuperación por correo. El procedimiento administrativo de restablecimiento debe ser seguro, auditado y documentado antes de abrir cuentas.

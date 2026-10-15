@@ -17,7 +17,7 @@ Plataforma de aprendizaje de JavaScript para principiantes. Un cuaderno de explo
 - 📚 9 lecciones con explicación, ejemplos y quiz formativo
 - ✅ Quiz de 5 preguntas × 4 opciones, feedback inmediato
 - 🎯 Evaluación formativa: 4/5 correctas + lectura = dominado
-- 🔄 Progreso efímero (session storage: sobrevive recargas, se borra al cerrar la pestaña)
+- 🔄 Progreso local anónimo (localStorage: sobrevive al cerrar, solo en este navegador, borrable)
 - 🌓 Tema claro/oscuro con paleta topográfica
 - 📱 Mobile-first responsive
 - ♿ Accesible (skip link, keyboard nav, ARIA, prefers-reduced-motion)
@@ -88,7 +88,7 @@ Cada lección tiene:
 - **Evaluación**: 4/5 correctas + lectura registrada = dominado
 - **Práctica opcional**: ejercicios de razonamiento que no afectan dominio
 
-El progreso se guarda en session storage (sobrevive recargas; se borra al cerrar la pestaña).
+El progreso se guarda en localStorage (persiste al cerrar; solo en este navegador, sin cuentas). Incluye enlace "Continuar" y borrado con confirmación.
 
 ## Fuera de alcance
 

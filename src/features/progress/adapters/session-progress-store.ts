@@ -1,40 +1,13 @@
-import type { UserProgress } from '../../../types/app'
 import type { ProgressStore } from '../domain/progress-store'
-import { createEmptyProgress } from '../domain/progress-tracker'
-
-const STORAGE_KEY = 'game-learning:progress'
-
-function isValidProgress(value: unknown): value is UserProgress {
-  if (typeof value !== 'object' || value === null) return false
-  const candidate = value as Record<string, unknown>
-  return typeof candidate.lessons === 'object' && candidate.lessons !== null
-    && 'lastAccessedLessonId' in candidate
-}
+import { StorageProgressStore } from './progress-storage'
 
 /**
- * Adaptador efímero para preview: guarda en sessionStorage.
- * El estado se pierde al cerrar la pestaña (design.md).
+ * Adaptador de fallback: guarda en sessionStorage.
+ * Se usa solo si localStorage no está disponible (modo privado estricto).
  */
-export class SessionProgressStore implements ProgressStore {
-  constructor(private readonly storage: Storage) {}
-
-  load(): UserProgress {
-    try {
-      const raw = this.storage.getItem(STORAGE_KEY)
-      if (!raw) return createEmptyProgress()
-      const parsed: unknown = JSON.parse(raw)
-      return isValidProgress(parsed) ? parsed : createEmptyProgress()
-    } catch {
-      return createEmptyProgress()
-    }
-  }
-
-  save(progress: UserProgress): void {
-    this.storage.setItem(STORAGE_KEY, JSON.stringify(progress))
-  }
-
-  clear(): void {
-    this.storage.removeItem(STORAGE_KEY)
+export class SessionProgressStore extends StorageProgressStore {
+  constructor(storage: Storage) {
+    super(storage)
   }
 }
 

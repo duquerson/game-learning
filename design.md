@@ -60,8 +60,8 @@ MÓVIL
 
 - Navegación por Básico, Intermedio y Avanzado; cada nivel abre una unidad con 3 lecciones.
 - Español en la primera release. Si se aprueba inglés con revisión bilingüe, usar rutas `/es/` y `/en/`, detectar idioma con `navigator.languages`/`Accept-Language` (no por IP) y permitir una preferencia manual persistente.
-- Mostrar dónde está la persona y qué le falta sin puntos, rachas, insignias ni cronómetros.
-- Estados de aprendizaje: sin empezar, en curso y dominado. En preview son temporales; indicar que se reinician. En beta se sincronizan solo después del gate legal y login.
+- Mostrar dónde está la persona y qué le falta sin puntos, rachas, insignias ni cronómetros. El banner “Llevas X/9 · Continuar” es cue de retorno, no racha: no cuenta días ni puntos.
+- Estados de aprendizaje: sin empezar, en curso y dominado. El progreso es local anónimo (localStorage, solo este navegador, sin cuentas); indicar que persiste al cerrar y que puede borrarse. La beta sincronizada sigue condicionada al gate legal y login.
 
 ## Componentes por responsabilidad
 
@@ -82,7 +82,7 @@ MÓVIL
 - Reintentos ilimitados, sin timer ni penalización. Mostrar intento/resultado con claridad.
 - Dominar exige marcar lectura y lograr 4/5 en quiz. Los ejercicios opcionales no afectan dominio.
 - En la preview, el resultado se calcula en cliente y las respuestas del contenido pueden inspeccionarse; no es una evaluación segura ni una certificación. La beta debe recomputar resultados en servidor.
-- Evitar bloqueos por navegación accidental; cualquier destrucción de estado local significativo requiere confirmación. Como la preview no persiste, no ofrecer un flujo de guardado ficticio.
+- Evitar bloqueos por navegación accidental; cualquier destrucción de estado local significativo requiere confirmación. Como el progreso es local anónimo, ofrecer borrado autoservicio con confirmación; no ofrecer un flujo de guardado ficticio ni sincronización.
 
 ## Estados de interfaz
 
@@ -92,7 +92,7 @@ MÓVIL
 - **Quiz sin contestar:** permitir elegir una opción; controles nativos radio con etiqueta completa.
 - **Feedback correcto/incorrecto:** explicación y siguiente acción; actualizar región `aria-live="polite"` sin mover el foco de forma inesperada.
 - **Error:** decir qué falló y qué acción puede resolverlo; conservar contexto cuando sea seguro; no mostrar stack, secretos ni datos personales.
-- **Preview sin persistencia:** aviso visible al entrar y en resumen de progreso; estado desaparece al recargar.
+- **Preview local anónima:** aviso visible al entrar y en resumen de progreso; estado persiste en este navegador y puede borrarse.
 - **Éxito:** mostrar qué concepto se dominó y dónde seguir, no recompensa artificial.
 
 ## Contratos del dominio

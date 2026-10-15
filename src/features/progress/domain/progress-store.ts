@@ -2,7 +2,7 @@ import type { UserProgress } from '../../../types/app'
 
 /**
  * Puerto de persistencia de progreso (architecture.md).
- * Preview usa adaptador efímero de session storage.
+ * Preview usa adaptador local anónimo (localStorage, con fallback).
  */
 export interface ProgressStore {
   load(): UserProgress

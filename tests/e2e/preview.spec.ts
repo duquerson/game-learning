@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test'
 
+async function waitHydrated(page: import('@playwright/test').Page) {
+  // LessonView registra la lectura en onMounted → señala hidratación Vue completa
+  await page.waitForFunction(() => localStorage.getItem('game-learning:progress') !== null)
+}
+
 async function answerCurrent(page: import('@playwright/test').Page, letter: string) {
   await page
     .locator('label.option')
@@ -13,14 +18,14 @@ test.describe('preview anónima — flujo principal', () => {
   test('la portada muestra el mapa de 9 lecciones', async ({ page }) => {
     await page.goto('/')
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    // 9 enlaces de lección en el CourseMap
-    const lessonLinks = page.locator('a[href^="/leccion/"]')
+    // 9 enlaces de lección en el CourseMap (el banner Continuar usa .continue-link)
+    const lessonLinks = page.locator('a.lesson-link[href^="/leccion/"]')
     await expect(lessonLinks).toHaveCount(9)
   })
 
   test('navega a una lección y muestra el contenido', async ({ page }) => {
     await page.goto('/')
-    await page.locator('a[href="/leccion/basico-variables"]').click()
+    await page.locator('a.lesson-link[href="/leccion/basico-variables"]').click()
     await expect(page).toHaveURL(/\/leccion\/basico-variables/)
     await expect(page.getByRole('heading', { level: 1, name: /Variables/ })).toBeVisible()
     // Explicación y quiz presentes
@@ -32,6 +37,7 @@ test.describe('preview anónima — flujo principal', () => {
     await page.goto('/leccion/basico-variables')
     // Esperar a que el island de Vue hidrate
     await expect(page.getByText('Pregunta 1 de 5')).toBeVisible()
+    await waitHydrated(page)
     // Seleccionar la primera opción
     await page.locator('label.option').first().click()
     // Botón comprobar habilitado
@@ -45,15 +51,25 @@ test.describe('preview anónima — flujo principal', () => {
     await expect(page.getByText('Pregunta 2 de 5')).toBeVisible()
   })
 
-  test('el progreso se guarda en session storage (efímero)', async ({ page }) => {
+  test('el progreso se guarda en local storage (persiste al cerrar)', async ({ page }) => {
     await page.goto('/leccion/basico-variables')
     await expect(page.getByText('Pregunta 1 de 5')).toBeVisible()
     // El quiz se sirve por SSR: esperar a que la hidratación registre la lectura
-    await page.waitForFunction(() => sessionStorage.getItem('game-learning:progress') !== null)
-    const stored = await page.evaluate(() => sessionStorage.getItem('game-learning:progress'))
+    await page.waitForFunction(() => localStorage.getItem('game-learning:progress') !== null)
+    const stored = await page.evaluate(() => localStorage.getItem('game-learning:progress'))
     expect(stored).toBeTruthy()
     const parsed = JSON.parse(stored!)
     expect(parsed.lessons['basico-variables'].read).toBe(true)
+  })
+
+  test('el progreso sobrevive a la recarga y ofrece continuar', async ({ page }) => {
+    await page.goto('/leccion/basico-variables')
+    await expect(page.getByText('Pregunta 1 de 5')).toBeVisible()
+    await page.waitForFunction(() => localStorage.getItem('game-learning:progress') !== null)
+    await page.reload()
+    await expect(page.getByText('Pregunta 1 de 5')).toBeVisible()
+    await expect(page.locator('a.lesson-link[href="/leccion/basico-variables"]')).toContainText('En curso')
+    await expect(page.getByRole('link', { name: /Continuar:/ })).toBeVisible()
   })
 
   test('skip link funciona con teclado', async ({ page }) => {

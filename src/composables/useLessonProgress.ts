@@ -1,6 +1,6 @@
 import { ref, computed, onMounted } from 'vue'
 import type { LessonProgress, UserProgress } from '@/types/app'
-import { createSessionProgressStore } from '@/features/progress/adapters/session-progress-store'
+import { STORAGE_KEY, createLocalProgressStore } from '@/features/progress/adapters/local-progress-store'
 import type { ProgressStore } from '@/features/progress/domain/progress-store'
 import { createEmptyProgress, markRead, recordQuizAttempt } from '@/features/progress/domain/progress-tracker'
 
@@ -9,8 +9,9 @@ let store: ProgressStore | null = null
 let storeLoaded = false
 
 /**
- * Composable compartido de progreso efímero (session storage).
- * Estado efímero: se pierde al recargar la pestaña (design.md).
+ * Composable compartido de progreso local anónimo (localStorage).
+ * Persiste al cerrar la pestaña/navegador; solo en este dispositivo.
+ * Sin cuentas ni sincronización. Borrado autoservicio vía clearProgress.
  *
  * Hidratación SSR-safe: las lecturas devuelven estado vacío hasta que
  * `ready` se activa en onMounted de cada instancia. Así el primer render
@@ -21,7 +22,7 @@ export function useLessonProgress() {
   const ready = ref(false)
 
   onMounted(() => {
-    if (!store) store = createSessionProgressStore()
+    if (!store) store = createLocalProgressStore()
     if (store && !storeLoaded) {
       sharedProgress.value = store.load()
       storeLoaded = true
@@ -54,5 +55,20 @@ export function useLessonProgress() {
     store?.save(sharedProgress.value)
   }
 
-  return { progress, stateOf, isRead, isMastered, registerRead, registerQuizResult }
+  function clearProgress(): void {
+    sharedProgress.value = createEmptyProgress()
+    try {
+      store?.clear()
+    } catch {
+      // best-effort: el estado en memoria ya se reinició (save/clear no lanzan)
+    }
+    // Limpia resto de session previa si existía (migración parcial / fallback).
+    try {
+      if (typeof window !== 'undefined') window.sessionStorage?.removeItem(STORAGE_KEY)
+    } catch {
+      // best-effort
+    }
+  }
+
+  return { progress, ready, stateOf, isRead, isMastered, registerRead, registerQuizResult, clearProgress }
 }

@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import type { Question, QuizResult } from '@/types/app'
 import { gradeQuiz } from '@/features/quiz/domain/grade-quiz'
+import { nextLesson } from '@/features/learning-content/content'
 
 const props = defineProps<{
   quiz: Question[]
@@ -35,7 +36,7 @@ function checkAnswer() {
   submitted.value = true
 }
 
-function next() {
+function nextStep() {
   if (questionNumber.value >= props.quiz.length) {
     result.value = gradeQuiz(props.quiz, answers.value)
     finished.value = true
@@ -59,6 +60,8 @@ function retry() {
 const isCorrectSelection = computed(
   () => submitted.value && currentAnswer.value === current.value.correctOptionId
 )
+
+const nextUp = computed(() => nextLesson(props.lessonId))
 </script>
 
 <template>
@@ -124,13 +127,18 @@ const isCorrectSelection = computed(
     >
       Comprobar respuesta
     </button>
-    <button v-else-if="!finished" type="button" class="btn primary touch-target" @click="next">
+    <button v-else-if="!finished" type="button" class="btn primary touch-target" @click="nextStep">
       {{ questionNumber >= quiz.length ? 'Ver resultado' : 'Siguiente pregunta' }}
     </button>
-    <button v-else type="button" class="btn secondary touch-target" @click="retry">
-      Reintentar quiz
-    </button>
-    <a v-if="finished" class="btn primary touch-target" href="/">Volver al mapa</a>
+    <template v-else>
+      <button type="button" class="btn secondary touch-target" @click="retry">
+        Reintentar quiz
+      </button>
+      <a v-if="result?.passed && nextUp" class="btn primary touch-target" :href="`/leccion/${nextUp.id}`">
+        Continuar: {{ nextUp.title }}
+      </a>
+      <a class="btn primary touch-target" href="/">Volver al mapa</a>
+    </template>
   </div>
   </section>
 </template>
